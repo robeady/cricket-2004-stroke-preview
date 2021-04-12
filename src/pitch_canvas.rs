@@ -82,7 +82,7 @@ impl PitchPainter {
                 ];
 
                 //for i in 0..5 {
-                paint_stroke_segment(hdc, &stroke.timings[2], bounds);
+                paint_stroke_segment(hdc, &stroke.timings_normal[2], bounds);
             }
 
             // FillRect(hdc, rc, self.background as _);

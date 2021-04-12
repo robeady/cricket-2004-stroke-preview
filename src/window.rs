@@ -18,8 +18,8 @@ pub fn render_ui(initial_data: UiData) -> anyhow::Result<()> {
 }
 
 pub struct UiData {
-    pub stroke_cfg_names: Vec<String>,
-    pub strokes: HashMap<String, Stroke>,
+    pub cfg_items: Vec<(String, i64)>,
+    pub cfg_contents: Vec<u8>,
 }
 
 pub struct Ui {
@@ -31,6 +31,7 @@ pub struct Ui {
 
     pitch_painter: Option<PitchPainter>,
 
+    selected_stroke: Option<Stroke>,
     data: UiData,
 }
 
@@ -38,7 +39,8 @@ impl Ui {
     pub fn update_data(&mut self, new_data: UiData) {
         self.data = new_data;
         self.pitch_canvas.invalidate();
-        self.list_select.set_collection(self.data.stroke_cfg_names.clone());
+        self.list_select
+            .set_collection(self.data.cfg_items.iter().map(|(name, _)| *name).collect());
     }
 }
 
@@ -95,7 +97,8 @@ impl UiWrapper {
             list_select,
             pitch_canvas,
             pitch_painter: None,
-            data: UiData { strokes: HashMap::new(), stroke_cfg_names: Vec::new() },
+            selected_stroke: None,
+            data: UiData { cfg_items: Vec::new(), cfg_contents: Vec::new() },
         }));
 
         let event_ui = Rc::downgrade(&ui);
@@ -107,15 +110,18 @@ impl UiWrapper {
                     E::OnInit if h == ui.window => ui.pitch_painter = Some(PitchPainter::new()),
                     E::OnPaint if h == ui.pitch_canvas => {
                         if let Some(painter) = &ui.pitch_painter {
-                            painter.paint(
-                                data.on_paint(),
-                                ui.list_select
-                                    .selection()
-                                    .map(|i| &ui.data.strokes[&ui.data.stroke_cfg_names[i]]),
-                            );
+                            painter.paint(data.on_paint(), ui.selected_stroke.as_ref());
                         }
                     }
-                    E::OnComboxBoxSelection if h == ui.list_select => {}
+                    E::OnComboxBoxSelection if h == ui.list_select => {
+                        if let Some(i) = ui.list_select.selection() {
+                            ui.selected_stroke = parse_stroke(
+                                &ui.data.cfg_contents,
+                                ui.data.cfg_items[i].1,
+                                ui.data.cfg_items.get(i + 1).map(|(_, offset)| *offset),
+                            )
+                        }
+                    }
                     E::OnWindowClose if h == ui.window => nwg::stop_thread_dispatch(),
                     _ => {}
                 }
@@ -124,4 +130,13 @@ impl UiWrapper {
 
         Ok(UiWrapper { ui, handler })
     }
+}
+
+fn parse_stroke(cfg_contents: &[u8], offset: i64, offset_next: Option<i64>) -> Option<Stroke> {
+    let slice = if let Some(end) = offset_next {
+        &cfg_contents[(offset as usize)..(end as usize)]
+    } else {
+        &cfg_contents[(offset as usize)..]
+    };
+    Stroke::parse(slice).ok()
 }
