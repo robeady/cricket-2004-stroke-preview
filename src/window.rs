@@ -22,13 +22,11 @@ pub struct UiData {
     pub cfg_contents: Vec<u8>,
 }
 
-struct UiControls {}
-
 pub struct Ui {
     window: nwg::Window,
     flex: nwg::FlexboxLayout,
 
-    list_select: nwg::ListBox<String>,
+    list_select: nwg::ComboBox<String>,
     pitch_canvas: nwg::ExternCanvas,
 
     pitch_painter: Option<PitchPainter>,
@@ -44,10 +42,9 @@ impl Ui {
         self.cfg_item_offsets = new_data.cfg_items.iter().map(|(_, offset)| *offset).collect();
         self.cfg_contents = new_data.cfg_contents;
         self.pitch_canvas.invalidate();
-        self.window
-            .self
-            .list_select
+        self.list_select
             .set_collection(new_data.cfg_items.into_iter().map(|(name, _)| name).collect());
+        self.list_select.sync();
     }
 }
 
@@ -70,13 +67,13 @@ impl UiWrapper {
             .flags(
                 nwg::WindowFlags::WINDOW | nwg::WindowFlags::VISIBLE | nwg::WindowFlags::RESIZABLE,
             )
-            .size((600, 300))
+            .size((300, 300))
             .position((300, 300))
             .title("Stroke preview")
             .build(&mut window)?;
 
         let mut list_select = default();
-        nwg::ListBox::builder()
+        nwg::ComboBox::builder()
             .collection(vec!["a".to_string()])
             .size((300, 10))
             .parent(&window)
@@ -89,11 +86,12 @@ impl UiWrapper {
         let flex = default();
         nwg::FlexboxLayout::builder()
             .parent(&window)
-            .child(&list_select)
-            // note that this flexbox implementation has no notion of a 'content size'
-            // so for the ListBox we hardcode a fixed height
+            // .flex_direction(FlexDirection::Column)
+            // .child(&list_select)
+            // // note that this flexbox implementation has no notion of a 'content size'
+            // // so for the combobox we hardcode a fixed height
             // .child_min_size(Size { width: D::Auto, height: D::Points(30.0) })
-            .child(&pitch_canvas)
+            // .child(&pitch_canvas)
             // .child_flex_grow(1.0)
             .build(&flex)?;
 
@@ -112,14 +110,12 @@ impl UiWrapper {
         let event_ui = Rc::downgrade(&ui);
         let handler = nwg::full_bind_event_handler(&window_handle, move |e, data, h| {
             if let Some(ui) = event_ui.upgrade() {
+                let mut ui = ui.borrow_mut();
                 use nwg::Event as E;
                 match e {
-                    E::OnInit if h == ui.window => {
-                        ui.borrow_mut().pitch_painter = Some(PitchPainter::new())
-                    }
+                    E::OnInit if h == ui.window => ui.pitch_painter = Some(PitchPainter::new()),
                     E::OnPaint if h == ui.pitch_canvas => {
-                        let mut ui = ui.borrow_mut();
-                        if let Some(painter) = ui.pitch_painter {
+                        if let Some(painter) = &ui.pitch_painter {
                             painter.paint(data.on_paint(), ui.selected_stroke.as_ref());
                         }
                     }
@@ -131,7 +127,7 @@ impl UiWrapper {
                         //         ui.cfg_item_offsets.get(i + 1).copied(),
                         //     )
                         // }
-                        // dbg!(ui.list_select.collection());
+                        dbg!(ui.list_select.collection());
                     }
                     E::OnWindowClose if h == ui.window => nwg::stop_thread_dispatch(),
                     _ => {}
