@@ -22,25 +22,32 @@ pub struct UiData {
     pub cfg_contents: Vec<u8>,
 }
 
+struct UiControls {}
+
 pub struct Ui {
     window: nwg::Window,
     flex: nwg::FlexboxLayout,
 
-    list_select: nwg::ComboBox<String>,
+    list_select: nwg::ListBox<String>,
     pitch_canvas: nwg::ExternCanvas,
 
     pitch_painter: Option<PitchPainter>,
 
     selected_stroke: Option<Stroke>,
-    data: UiData,
+
+    pub cfg_item_offsets: Vec<i64>,
+    pub cfg_contents: Vec<u8>,
 }
 
 impl Ui {
     pub fn update_data(&mut self, new_data: UiData) {
-        self.data = new_data;
+        self.cfg_item_offsets = new_data.cfg_items.iter().map(|(_, offset)| *offset).collect();
+        self.cfg_contents = new_data.cfg_contents;
         self.pitch_canvas.invalidate();
-        self.list_select
-            .set_collection(self.data.cfg_items.iter().map(|(name, _)| *name).collect());
+        self.window
+            .self
+            .list_select
+            .set_collection(new_data.cfg_items.into_iter().map(|(name, _)| name).collect());
     }
 }
 
@@ -63,14 +70,15 @@ impl UiWrapper {
             .flags(
                 nwg::WindowFlags::WINDOW | nwg::WindowFlags::VISIBLE | nwg::WindowFlags::RESIZABLE,
             )
-            .size((300, 300))
+            .size((600, 300))
             .position((300, 300))
             .title("Stroke preview")
             .build(&mut window)?;
 
         let mut list_select = default();
-        nwg::ComboBox::builder()
+        nwg::ListBox::builder()
             .collection(vec!["a".to_string()])
+            .size((300, 10))
             .parent(&window)
             .build(&mut list_select)?;
 
@@ -80,14 +88,13 @@ impl UiWrapper {
         // Layouts
         let flex = default();
         nwg::FlexboxLayout::builder()
-            .flex_direction(FlexDirection::Column)
             .parent(&window)
             .child(&list_select)
             // note that this flexbox implementation has no notion of a 'content size'
-            // so for the combobox we hardcode a fixed height
-            .child_min_size(Size { width: D::Auto, height: D::Points(30.0) })
+            // so for the ListBox we hardcode a fixed height
+            // .child_min_size(Size { width: D::Auto, height: D::Points(30.0) })
             .child(&pitch_canvas)
-            .child_flex_grow(1.0)
+            // .child_flex_grow(1.0)
             .build(&flex)?;
 
         let window_handle = window.handle;
@@ -98,29 +105,33 @@ impl UiWrapper {
             pitch_canvas,
             pitch_painter: None,
             selected_stroke: None,
-            data: UiData { cfg_items: Vec::new(), cfg_contents: Vec::new() },
+            cfg_item_offsets: Vec::new(),
+            cfg_contents: Vec::new(),
         }));
 
         let event_ui = Rc::downgrade(&ui);
         let handler = nwg::full_bind_event_handler(&window_handle, move |e, data, h| {
             if let Some(ui) = event_ui.upgrade() {
-                let mut ui = ui.borrow_mut();
                 use nwg::Event as E;
                 match e {
-                    E::OnInit if h == ui.window => ui.pitch_painter = Some(PitchPainter::new()),
+                    E::OnInit if h == ui.window => {
+                        ui.borrow_mut().pitch_painter = Some(PitchPainter::new())
+                    }
                     E::OnPaint if h == ui.pitch_canvas => {
-                        if let Some(painter) = &ui.pitch_painter {
+                        let mut ui = ui.borrow_mut();
+                        if let Some(painter) = ui.pitch_painter {
                             painter.paint(data.on_paint(), ui.selected_stroke.as_ref());
                         }
                     }
                     E::OnComboxBoxSelection if h == ui.list_select => {
-                        if let Some(i) = ui.list_select.selection() {
-                            ui.selected_stroke = parse_stroke(
-                                &ui.data.cfg_contents,
-                                ui.data.cfg_items[i].1,
-                                ui.data.cfg_items.get(i + 1).map(|(_, offset)| *offset),
-                            )
-                        }
+                        // if let Some(i) = ui.list_select.selection() {
+                        //     ui.selected_stroke = parse_stroke(
+                        //         &ui.cfg_contents,
+                        //         ui.cfg_item_offsets[i],
+                        //         ui.cfg_item_offsets.get(i + 1).copied(),
+                        //     )
+                        // }
+                        // dbg!(ui.list_select.collection());
                     }
                     E::OnWindowClose if h == ui.window => nwg::stop_thread_dispatch(),
                     _ => {}
@@ -133,10 +144,14 @@ impl UiWrapper {
 }
 
 fn parse_stroke(cfg_contents: &[u8], offset: i64, offset_next: Option<i64>) -> Option<Stroke> {
+    // https://www.planetcricket.org/forums/threads/config-editor-v3.8697/post-130389
+    let offset = offset - 558891008;
     let slice = if let Some(end) = offset_next {
+        let end = end - 558891008;
         &cfg_contents[(offset as usize)..(end as usize)]
     } else {
         &cfg_contents[(offset as usize)..]
     };
-    Stroke::parse(slice).ok()
+    dbg!(String::from_utf8_lossy(slice));
+    dbg!(Stroke::parse(slice).unwrap())
 }

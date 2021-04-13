@@ -11,7 +11,7 @@ mod strokes;
 mod window;
 
 fn main() -> anyhow::Result<()> {
-    let cfg_items: Vec<_> =
+    let mut cfg_items: Vec<_> =
         read_list_file(r"C:\Users\Rob\OneDrive\Projects\Cricket 2004\AI configs\List.txt")?
             .map(|s| {
                 let parts = s.split(",").collect::<Vec<_>>();
@@ -20,7 +20,7 @@ fn main() -> anyhow::Result<()> {
             // https://www.planetcricket.org/forums/threads/config-editor-v3.8697/post-130389
             .filter(|(_, offset)| (558891008..=559079424).contains(offset))
             .collect();
-    cfg_items.sort_by_key(|(_, offset)| offset);
+    cfg_items.sort_by_key(|(_, offset)| *offset);
 
     let cfg_contents = read_strokes_from_ai_cfg_file(
         r"C:\Users\Rob\OneDrive\Projects\Cricket 2004\AI configs\My AI Configs Newer.cfg",
