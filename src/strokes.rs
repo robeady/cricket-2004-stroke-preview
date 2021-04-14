@@ -50,15 +50,9 @@ fn kv2_line<'a, 'b: 'a>(
     )
 }
 
-fn parse_stroke<'a>(b: &'a [u8]) -> CResult<'a, Option<Stroke>> {
-    let (b, _) = match take_till(|c| c == b't')(b) {
-        Err(nom::Err::Incomplete(_)) => return Ok((b, None)),
-        r => r,
-    }?;
-    let (b, _) = match tag_no_case("trokeAttributes")(b) {
-        Err(_) => return Ok((b, None)),
-        r => r,
-    }?;
+fn parse_stroke<'a>(b: &'a [u8]) -> CResult<'a, Stroke> {
+    let (b, _) = take_till(|c| c == b't')(b)?;
+    let (b, _) = tag_no_case("trokeAttributes")(b)?;
 
     let (b, _typ) = preceded(many1(line_ending), terminated(kv("Type"), many1(line_ending)))(b)?;
     let (b, _edge_modifier) = kv_line("EdgeModifier")(b)?;
@@ -103,15 +97,15 @@ fn parse_stroke<'a>(b: &'a [u8]) -> CResult<'a, Option<Stroke>> {
 
     Ok((
         b,
-        Some(Stroke {
+        Stroke {
             timings_normal: [normal_0, normal_1, normal_2, normal_3, normal_4],
             timings_hit6: [hit6_0, hit6_1, hit6_2, hit6_3, hit6_4],
-        }),
+        },
     ))
 }
 
 impl Stroke {
-    pub fn parse(b: &[u8]) -> anyhow::Result<Option<Stroke>> {
+    pub fn parse(b: &[u8]) -> anyhow::Result<Stroke> {
         let (_remaining, stroke) = parse_stroke(b).map_err(|e| match e {
             nom::Err::Incomplete(Needed::Size(u)) => {
                 anyhow!("Error parsing stroke: parsing requires {} bytes", u)
@@ -287,11 +281,6 @@ Power 144631 PowerArea 361578
             ],
         };
 
-        assert_eq!(Stroke::parse(stroke).unwrap(), Some(expected));
-    }
-
-    #[test]
-    fn ignores_other_stuff() {
-        assert_eq!(Stroke::parse(b"\0; Ball Conditions (Ball) Cricket 2004").unwrap(), None);
+        assert_eq!(Stroke::parse(stroke).unwrap(), expected);
     }
 }

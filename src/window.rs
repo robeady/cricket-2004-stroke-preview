@@ -120,11 +120,11 @@ impl UiWrapper {
                         }
                         E::OnListBoxSelect if h == ui.list_select => {
                             if let Some(i) = ui.list_select.selection() {
-                                ui.selected_stroke = parse_stroke(
+                                ui.selected_stroke = Some(parse_stroke(
                                     &ui.cfg_contents,
                                     ui.cfg_item_offsets[i],
                                     ui.cfg_item_offsets.get(i + 1).copied(),
-                                )
+                                ))
                             }
                         }
                         E::OnWindowClose if h == ui.window => nwg::stop_thread_dispatch(),
@@ -138,7 +138,7 @@ impl UiWrapper {
     }
 }
 
-fn parse_stroke(cfg_contents: &[u8], offset: i64, offset_next: Option<i64>) -> Option<Stroke> {
+fn parse_stroke(cfg_contents: &[u8], offset: i64, offset_next: Option<i64>) -> Stroke {
     // https://www.planetcricket.org/forums/threads/config-editor-v3.8697/post-130389
     // offset of first stroke
     let delta = -558891009;
