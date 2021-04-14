@@ -1,7 +1,9 @@
 use crate::{pitch_canvas::PitchPainter, strokes::Stroke};
 use nwg::stretch::geometry::{Rect, Size};
-use nwg::stretch::style::{Dimension as D, FlexDirection};
-use std::rc::Rc;
+use nwg::stretch::style::{
+    AlignContent, AlignItems, AlignSelf, Dimension as D, FlexDirection, JustifyContent,
+};
+use std::{any::Any, rc::Rc};
 use std::{cell::RefCell, collections::HashMap};
 
 fn default<T: Default>() -> T {
@@ -24,17 +26,19 @@ pub struct UiData {
 
 pub struct Ui {
     window: nwg::Window,
-    flex: nwg::FlexboxLayout,
 
     list_select: nwg::ListBox<String>,
     pitch_canvas: nwg::ExternCanvas,
+    radios: [nwg::RadioButton; 5],
 
     pitch_painter: Option<PitchPainter>,
 
     selected_stroke: Option<Stroke>,
+    selected_timing: usize,
 
     pub cfg_item_offsets: Vec<i64>,
     pub cfg_contents: Vec<u8>,
+    _other_controls_keepalive: Vec<Box<dyn Any>>,
 }
 
 impl Ui {
@@ -49,13 +53,15 @@ impl Ui {
 
 pub struct UiWrapper {
     pub ui: Rc<RefCell<Ui>>,
-    handler: nwg::EventHandler,
+    handlers: [nwg::EventHandler; 1],
 }
 
 impl Drop for UiWrapper {
     /// To make sure that everything is freed without issues, the default handler must be unbound.
     fn drop(&mut self) {
-        nwg::unbind_event_handler(&self.handler);
+        for handler in self.handlers.iter() {
+            nwg::unbind_event_handler(handler);
+        }
     }
 }
 
@@ -66,7 +72,7 @@ impl UiWrapper {
             .flags(
                 nwg::WindowFlags::WINDOW | nwg::WindowFlags::VISIBLE | nwg::WindowFlags::RESIZABLE,
             )
-            .size((600, 300))
+            .size((700, 450))
             .position((300, 300))
             .title("Stroke preview")
             .build(&mut window)?;
@@ -78,31 +84,101 @@ impl UiWrapper {
             .parent(&window)
             .build(&mut list_select)?;
 
-        let mut pitch_canvas = default();
-        nwg::ExternCanvas::builder().parent(Some(&window)).build(&mut pitch_canvas)?;
-
         // Layouts
-        let flex = default();
+
+        let mut right_frame = default();
+        nwg::Frame::builder()
+            .parent(&window)
+            .flags(nwg::FrameFlags::VISIBLE)
+            .build(&mut right_frame)?;
+
+        // nested flexbox hack: put the nested flex inside a frame, the frame can be set as a child of another flex
+        let mut radios_frame = default();
+        nwg::Frame::builder()
+            .flags(nwg::FrameFlags::VISIBLE)
+            .parent(&right_frame)
+            .build(&mut radios_frame)?;
+
+        let mut radios = [default(), default(), default(), default(), default()];
+        nwg::RadioButton::builder()
+            .parent(&radios_frame)
+            .position((0, 0))
+            .size((100, 35))
+            .flags(nwg::RadioButtonFlags::VISIBLE | nwg::RadioButtonFlags::GROUP)
+            .text("Very early")
+            .build(&mut radios[0])?;
+        nwg::RadioButton::builder()
+            .parent(&radios_frame)
+            .position((100, 0))
+            .size((70, 35))
+            .flags(nwg::RadioButtonFlags::VISIBLE)
+            .text("Early")
+            .build(&mut radios[1])?;
+        nwg::RadioButton::builder()
+            .parent(&radios_frame)
+            .position((170, 0))
+            .size((70, 35))
+            .flags(nwg::RadioButtonFlags::VISIBLE)
+            .check_state(nwg::RadioButtonState::Checked)
+            .text("Ideal")
+            .build(&mut radios[2])?;
+        nwg::RadioButton::builder()
+            .parent(&radios_frame)
+            .position((240, 0))
+            .size((70, 35))
+            .flags(nwg::RadioButtonFlags::VISIBLE)
+            .text("Late")
+            .build(&mut radios[3])?;
+        nwg::RadioButton::builder()
+            .parent(&radios_frame)
+            .position((310, 0))
+            .size((90, 35))
+            .flags(nwg::RadioButtonFlags::VISIBLE)
+            .text("Very late")
+            .build(&mut radios[4])?;
+
+        let mut pitch_canvas = default();
+        nwg::ExternCanvas::builder().parent(Some(&right_frame)).build(&mut pitch_canvas)?;
+
+        let right_flex = default();
+        nwg::FlexboxLayout::builder()
+            .flex_direction(FlexDirection::Column)
+            .align_items(AlignItems::Center)
+            .parent(&right_frame)
+            .child(&pitch_canvas)
+            .child_size(Size { width: D::Percent(1.0), height: D::Percent(1.0) })
+            .child(&radios_frame)
+            .child_size(Size { width: D::Points(400.0), height: D::Points(35.0) })
+            // .child_flex_shrink(0.0)
+            // .child_flex_grow(0.0)
+            .build(&right_flex)?;
+
+        let root = default();
         nwg::FlexboxLayout::builder()
             .parent(&window)
             .child(&list_select)
-            // note that this flexbox implementation has no notion of a 'content size'
-            // so for the ListBox we hardcode a fixed height
-            // .child_min_size(Size { width: D::Auto, height: D::Points(30.0) })
-            .child(&pitch_canvas)
-            // .child_flex_grow(1.0)
-            .build(&flex)?;
+            .child_flex_grow(1.0)
+            .child(&right_frame)
+            .child_flex_grow(2.0)
+            .build(&root)?;
 
         let window_handle = window.handle;
         let ui = Rc::new(RefCell::new(Ui {
             window,
-            flex,
             list_select,
             pitch_canvas,
+            radios,
             pitch_painter: None,
             selected_stroke: None,
+            selected_timing: 2,
             cfg_item_offsets: Vec::new(),
             cfg_contents: Vec::new(),
+            _other_controls_keepalive: vec![
+                Box::new(radios_frame),
+                Box::new(right_flex),
+                Box::new(right_frame),
+                Box::new(root),
+            ],
         }));
 
         let event_ui = Rc::downgrade(&ui);
@@ -115,7 +191,11 @@ impl UiWrapper {
                         E::OnInit if h == ui.window => ui.pitch_painter = Some(PitchPainter::new()),
                         E::OnPaint if h == ui.pitch_canvas => {
                             if let Some(painter) = &ui.pitch_painter {
-                                painter.paint(data.on_paint(), ui.selected_stroke.as_ref(), 2);
+                                painter.paint(
+                                    data.on_paint(),
+                                    ui.selected_stroke.as_ref(),
+                                    ui.selected_timing,
+                                );
                             }
                         }
                         E::OnListBoxSelect if h == ui.list_select => {
@@ -129,13 +209,19 @@ impl UiWrapper {
                             }
                         }
                         E::OnWindowClose if h == ui.window => nwg::stop_thread_dispatch(),
+                        E::OnButtonClick => {
+                            if let Some(i) = ui.radios.iter().position(|r| *r == h) {
+                                ui.selected_timing = i;
+                                ui.pitch_canvas.invalidate();
+                            }
+                        }
                         _ => {}
                     }
                 }
             }
         });
 
-        Ok(UiWrapper { ui, handler })
+        Ok(UiWrapper { ui, handlers: [handler] })
     }
 }
 
