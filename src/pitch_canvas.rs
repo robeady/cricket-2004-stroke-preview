@@ -2,11 +2,11 @@ use std::cmp::min;
 use std::f64::consts::TAU;
 
 use winapi::{
-    shared::windef::{HBRUSH, HDC, HPEN, POINT, RECT},
+    shared::windef::{HBRUSH, HDC, HPEN, RECT},
     um::{
         wingdi::{
-            CreatePen, CreateSolidBrush, Ellipse, LineTo, MoveToEx, Pie, SelectObject, PS_SOLID,
-            RGB,
+            CreatePen, CreateSolidBrush, Ellipse, GetStockObject, Pie, SelectObject, NULL_PEN,
+            PS_SOLID, RGB, WHITE_PEN,
         },
         winuser::{FillRect, GetSysColorBrush, COLOR_MENU},
     },
@@ -19,11 +19,10 @@ pub struct PitchPainter {
     border: HBRUSH,
     pen: HPEN,
     green: HBRUSH,
-    stroke_vearly: HBRUSH,
-    stroke_early: HBRUSH,
-    stroke_ideal: HBRUSH,
-    stroke_late: HBRUSH,
-    stroke_vlate: HBRUSH,
+    dark_green: HBRUSH,
+
+    stroke_min: HBRUSH,
+    stroke_max: HBRUSH,
 }
 
 impl PitchPainter {
@@ -34,17 +33,15 @@ impl PitchPainter {
                 background: GetSysColorBrush(COLOR_MENU),
                 border: CreateSolidBrush(RGB(100, 100, 255)),
                 pen: CreatePen(PS_SOLID as _, 2, RGB(20, 20, 20)),
-                green: CreateSolidBrush(RGB(0, 150, 0)),
-                stroke_vearly: CreateSolidBrush(RGB(255, 122, 0)),
-                stroke_early: CreateSolidBrush(RGB(230, 30, 10)),
-                stroke_ideal: CreateSolidBrush(RGB(240, 0, 250)),
-                stroke_late: CreateSolidBrush(RGB(60, 20, 230)),
-                stroke_vlate: CreateSolidBrush(RGB(0, 120, 250)),
+                green: CreateSolidBrush(RGB(0, 190, 0)),
+                dark_green: CreateSolidBrush(RGB(0, 150, 0)),
+                stroke_min: CreateSolidBrush(RGB(250, 100, 50)),
+                stroke_max: CreateSolidBrush(RGB(250, 250, 30)),
             }
         }
     }
 
-    pub fn paint(&self, paint: &nwg::PaintData, stroke: Option<&Stroke>) {
+    pub fn paint(&self, paint: &nwg::PaintData, stroke: Option<&Stroke>, selected_timing: usize) {
         let ps = paint.begin_paint();
 
         unsafe {
@@ -56,6 +53,7 @@ impl PitchPainter {
             // pitch
             let pad = 5;
             SelectObject(hdc, self.green as _);
+            SelectObject(hdc, GetStockObject(WHITE_PEN as _));
             // make sure it's round
             let height = rc.bottom - rc.top;
             let width = rc.right - rc.left;
@@ -72,17 +70,20 @@ impl PitchPainter {
 
             // strokes
 
-            if let Some(stroke) = stroke {
-                let brushes = [
-                    self.stroke_vearly,
-                    self.stroke_early,
-                    self.stroke_ideal,
-                    self.stroke_late,
-                    self.stroke_vlate,
-                ];
+            SelectObject(hdc, GetStockObject(NULL_PEN as _));
 
-                //for i in 0..5 {
-                paint_stroke_segment(hdc, &stroke.timings_normal[2], bounds);
+            if let Some(stroke) = stroke {
+                for i in 0..5 {
+                    if selected_timing != i {
+                        self.paint_stroke_segment(hdc, &stroke.timings_normal[i], bounds, false);
+                    }
+                }
+                self.paint_stroke_segment(
+                    hdc,
+                    &stroke.timings_normal[selected_timing],
+                    bounds,
+                    true,
+                );
             }
 
             // FillRect(hdc, rc, self.background as _);
@@ -108,41 +109,56 @@ impl PitchPainter {
 
         paint.end_paint(&ps);
     }
-}
 
-/// brush should be semi-transparent as we will draw twice, once for min power and once for max
-fn paint_stroke_segment(hdc: HDC, stroke: &StrokeTiming, bounds: RECT) {
-    for &radius in [stroke.power - stroke.power_area, stroke.power + stroke.power_area].iter() {
-        let radius = radius as f64;
+    /// brush should be semi-transparent as we will draw twice, once for min power and once for max
+    fn paint_stroke_segment(
+        &self,
+        hdc: HDC,
+        stroke: &StrokeTiming,
+        bounds: RECT,
+        highlighted: bool,
+    ) {
+        let centre_x = (bounds.left + bounds.right) as f64 / 2.0;
+        let centre_y = (bounds.top + bounds.bottom) as f64 / 2.0;
+
+        let pitch_radius = (bounds.right - bounds.left) as f64 / 2.0; // it's a circle
 
         // angle is in radians anticlockwise 0 being directly behind the batsman
         let angle = (stroke.direction as f64 - 60_000.0) / 269_070_000.0 * TAU;
 
-        let min_angle = angle - stroke.direction_area / 269_070_000.0 * TAU;
-        let max_angle = angle + stroke.direction_area / 269_070_000.0 * TAU;
+        let min_angle = dbg!((angle - stroke.direction_area / 269_070_000.0 * TAU) % TAU);
+        let max_angle = dbg!((angle + stroke.direction_area / 269_070_000.0 * TAU) % TAU);
 
-        let centre_x = (bounds.left + bounds.right) as f64 / 2.0;
-        let centre_y = (bounds.top + bounds.bottom) as f64 / 2.0;
+        let min_radial_intercept_x = dbg!(centre_x - 100.0 * min_angle.sin());
+        let min_radial_intercept_y = dbg!(centre_y - 100.0 * min_angle.cos());
 
-        let min_radial_endpoint_x = centre_x - radius * min_angle.sin();
-        let min_radial_endpoint_y = centre_y - radius * min_angle.cos();
+        let max_radial_intercept_x = dbg!(centre_x - 100.0 * max_angle.sin());
+        let max_radial_intercept_y = dbg!(centre_y - 100.0 * max_angle.cos());
 
-        let max_radial_endpoint_x = centre_x - radius * max_angle.sin();
-        let max_radial_endpoint_y = centre_y - radius * max_angle.cos();
+        for &(radius_unscaled, brush) in [
+            (stroke.power + stroke.power_area, self.stroke_max),
+            (stroke.power - stroke.power_area, self.stroke_min),
+        ]
+        .iter()
+        {
+            let shot_radius = dbg!(pitch_radius * radius_unscaled / 4_500_000.0);
 
-        unsafe {
-            Pie(
-                hdc,
-                bounds.left,
-                bounds.top,
-                bounds.right,
-                bounds.bottom,
-                min_radial_endpoint_x as i32,
-                min_radial_endpoint_y as i32,
-                max_radial_endpoint_x as i32,
-                max_radial_endpoint_y as i32,
-            );
+            unsafe {
+                SelectObject(hdc, if highlighted { brush } else { self.dark_green } as _);
+
+                Pie(
+                    hdc,
+                    (centre_x - shot_radius) as i32,
+                    (centre_y - shot_radius) as i32,
+                    (centre_x + shot_radius) as i32,
+                    (centre_y + shot_radius) as i32,
+                    min_radial_intercept_x as i32,
+                    min_radial_intercept_y as i32,
+                    max_radial_intercept_x as i32,
+                    max_radial_intercept_y as i32,
+                );
+            }
+            // LineTo(hdc, nXEnd, nYEnd);
         }
-        // LineTo(hdc, nXEnd, nYEnd);
     }
 }

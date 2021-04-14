@@ -115,7 +115,7 @@ impl UiWrapper {
                         E::OnInit if h == ui.window => ui.pitch_painter = Some(PitchPainter::new()),
                         E::OnPaint if h == ui.pitch_canvas => {
                             if let Some(painter) = &ui.pitch_painter {
-                                painter.paint(data.on_paint(), ui.selected_stroke.as_ref());
+                                painter.paint(data.on_paint(), ui.selected_stroke.as_ref(), 2);
                             }
                         }
                         E::OnListBoxSelect if h == ui.list_select => {
@@ -124,7 +124,8 @@ impl UiWrapper {
                                     &ui.cfg_contents,
                                     ui.cfg_item_offsets[i],
                                     ui.cfg_item_offsets.get(i + 1).copied(),
-                                ))
+                                ));
+                                ui.pitch_canvas.invalidate();
                             }
                         }
                         E::OnWindowClose if h == ui.window => nwg::stop_thread_dispatch(),
