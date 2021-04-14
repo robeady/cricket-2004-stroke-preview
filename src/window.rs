@@ -142,15 +142,13 @@ fn parse_stroke(cfg_contents: &[u8], offset: i64, offset_next: Option<i64>) -> O
     // https://www.planetcricket.org/forums/threads/config-editor-v3.8697/post-130389
     // offset of first stroke
     let delta = -558891009;
-    dbg!(offset);
     let offset = offset + delta;
-    dbg!(offset);
     let slice = if let Some(end) = offset_next {
         let end = end + delta;
         &cfg_contents[(offset as usize)..(end as usize)]
     } else {
         &cfg_contents[(offset as usize)..]
     };
-    dbg!(String::from_utf8_lossy(slice));
-    dbg!(Stroke::parse(slice).unwrap())
+    String::from_utf8_lossy(slice);
+    Stroke::parse(slice).unwrap()
 }
