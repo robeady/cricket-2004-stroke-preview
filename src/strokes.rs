@@ -1,7 +1,8 @@
 use nom::{
+    branch::alt,
     bytes::{complete::tag_no_case, streaming::take_till},
     character::streaming::{alphanumeric1, line_ending, space1},
-    combinator::map_res,
+    combinator::{map_res, opt},
     error::{convert_error, Error, VerboseError},
     multi::many1,
     sequence::{pair, preceded, terminated, tuple},
@@ -33,7 +34,7 @@ fn kv<'a, 'b: 'a>(k: &'b str) -> impl FnMut(&'a [u8]) -> CResult<'a> {
 }
 
 fn kv_line<'a, 'b: 'a>(k: &'b str) -> impl FnMut(&'a [u8]) -> CResult<'a, f64> {
-    map_res(map_res(terminated(kv(k), many1(line_ending)), from_utf8), str::parse)
+    map_res(map_res(terminated(kv(k), many1(alt((space1, line_ending)))), from_utf8), str::parse)
 }
 
 fn kv2_line<'a, 'b: 'a>(
@@ -61,7 +62,7 @@ fn parse_stroke<'a>(b: &'a [u8]) -> CResult<'a, Option<Stroke>> {
 
     let (b, _typ) = preceded(many1(line_ending), terminated(kv("Type"), many1(line_ending)))(b)?;
     let (b, _edge_modifier) = kv_line("EdgeModifier")(b)?;
-    let (b, _edge_modifier6) = kv_line("EdgeModifier6")(b)?;
+    let (b, _edge_modifier6) = opt(kv_line("EdgeModifier6"))(b)?;
     let (b, (_Difficulty, _Reward)) = kv2_line("Difficulty", "Reward")(b)?;
     let (b, (_Difficulty6, _Reward6)) = kv2_line("Difficulty6", "Reward6")(b)?;
     let (b, (_EdgeProb, _EdgeProb6)) = kv2_line("EdgeProb", "EdgeProb6")(b)?;

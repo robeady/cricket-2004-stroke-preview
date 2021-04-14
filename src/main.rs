@@ -29,19 +29,11 @@ fn main() -> anyhow::Result<()> {
     render_ui(UiData { cfg_items, cfg_contents })
 }
 
-fn sort_ai_cfg_names(ai_cfg_names: &mut Vec<String>) {
-    ai_cfg_names.sort_by_cached_key(|name| {
-        let parts = name.split(",").collect::<Vec<_>>();
-        parts[1].parse::<i64>().unwrap()
-    });
-    print!("{:#?}", ai_cfg_names);
-}
-
 fn read_strokes_from_ai_cfg_file(path: &str) -> anyhow::Result<Vec<u8>> {
     let file = File::open(path).context("could not open cfg file")?;
 
-    // https://www.planetcricket.org/forums/threads/config-editor-v3.8697/post-130389
-    let bytes_of_non_strokes: u64 = 25696336 - 25665536;
+    // offset found experimentally
+    let bytes_of_non_strokes: u64 = 0x7c60;
     let buffer_size = file.metadata().map(|m| m.len() + 1 - bytes_of_non_strokes).unwrap_or(0);
 
     let mut buf = BufReader::new(file);
