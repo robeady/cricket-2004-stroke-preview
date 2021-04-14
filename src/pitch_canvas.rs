@@ -126,14 +126,14 @@ impl PitchPainter {
         // angle is in radians anticlockwise 0 being directly behind the batsman
         let angle = (stroke.direction as f64 - 60_000.0) / 269_070_000.0 * TAU;
 
-        let min_angle = dbg!((angle - stroke.direction_area / 269_070_000.0 * TAU) % TAU);
-        let max_angle = dbg!((angle + stroke.direction_area / 269_070_000.0 * TAU) % TAU);
+        let min_angle = (angle - stroke.direction_area / 269_070_000.0 * TAU) % TAU;
+        let max_angle = (angle + stroke.direction_area / 269_070_000.0 * TAU) % TAU;
 
-        let min_radial_intercept_x = dbg!(centre_x - 100.0 * min_angle.sin());
-        let min_radial_intercept_y = dbg!(centre_y - 100.0 * min_angle.cos());
+        let min_radial_intercept_x = centre_x - 100.0 * min_angle.sin();
+        let min_radial_intercept_y = centre_y - 100.0 * min_angle.cos();
 
-        let max_radial_intercept_x = dbg!(centre_x - 100.0 * max_angle.sin());
-        let max_radial_intercept_y = dbg!(centre_y - 100.0 * max_angle.cos());
+        let max_radial_intercept_x = centre_x - 100.0 * max_angle.sin();
+        let max_radial_intercept_y = centre_y - 100.0 * max_angle.cos();
 
         for &(radius_unscaled, brush) in [
             (stroke.power + stroke.power_area, self.stroke_max),
@@ -141,7 +141,7 @@ impl PitchPainter {
         ]
         .iter()
         {
-            let shot_radius = dbg!(pitch_radius * radius_unscaled / 4_500_000.0);
+            let shot_radius = pitch_radius * radius_unscaled / 4_500_000.0;
 
             unsafe {
                 SelectObject(hdc, if highlighted { brush } else { self.dark_green } as _);
