@@ -145,8 +145,6 @@ impl UiWrapper {
             .child_size(Size { width: D::Percent(1.0), height: D::Percent(1.0) })
             .child(&radios_frame)
             .child_size(Size { width: D::Points(400.0), height: D::Points(35.0) })
-            // .child_flex_shrink(0.0)
-            // .child_flex_grow(0.0)
             .build(&right_flex)?;
 
         let root = default();
