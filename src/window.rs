@@ -27,6 +27,9 @@ pub struct UiData {
 pub struct Ui {
     window: nwg::Window,
 
+    list_file: nwg::TextInput,
+    cfg_file: nwg::TextInput,
+
     list_select: nwg::ListBox<String>,
     pitch_canvas: nwg::ExternCanvas,
     radios: [nwg::RadioButton; 5],
@@ -65,12 +68,14 @@ impl Drop for UiWrapper {
     }
 }
 
-const ZERO_RECT: Rect<D> = Rect {
-    top: D::Points(0.0),
-    bottom: D::Points(0.0),
-    start: D::Points(0.0),
-    end: D::Points(0.0),
-};
+fn rect(points: f32) -> Rect<D> {
+    Rect {
+        top: D::Points(points),
+        bottom: D::Points(0.0),
+        start: D::Points(points),
+        end: D::Points(points),
+    }
+}
 
 impl UiWrapper {
     fn build() -> anyhow::Result<UiWrapper> {
@@ -108,7 +113,7 @@ impl UiWrapper {
 
         let radios_flex = default();
         let mut flex_builder =
-            nwg::FlexboxLayout::builder().parent(&radios_frame).padding(ZERO_RECT);
+            nwg::FlexboxLayout::builder().parent(&radios_frame).padding(rect(0.0));
 
         let mut radios = [default(), default(), default(), default(), default()];
         for (i, &(text, width)) in [
@@ -124,7 +129,7 @@ impl UiWrapper {
             use nwg::RadioButtonFlags as Flags;
             nwg::RadioButton::builder()
                 .parent(&radios_frame)
-                .flags(if i == 0 { Flags::VISIBLE } else { Flags::VISIBLE | Flags::GROUP })
+                .flags(if i == 0 { Flags::VISIBLE | Flags::GROUP } else { Flags::VISIBLE })
                 .text(text)
                 .build(&mut radios[i])?;
             flex_builder = flex_builder
@@ -136,15 +141,74 @@ impl UiWrapper {
         let mut pitch_canvas = default();
         nwg::ExternCanvas::builder().parent(Some(&right_frame)).build(&mut pitch_canvas)?;
 
+        let mut cfg_file_frame = default();
+        nwg::Frame::builder()
+            .parent(&right_frame)
+            .flags(nwg::FrameFlags::VISIBLE)
+            .build(&mut cfg_file_frame)?;
+        let mut cfg_file_label = default();
+        nwg::Label::builder().parent(&cfg_file_frame).text("Cfg:").build(&mut cfg_file_label)?;
+        let mut cfg_file = default();
+        nwg::TextInput::builder().parent(&cfg_file_frame).text("AI.cfg").build(&mut cfg_file)?;
+        let cfg_file_flex = default();
+        nwg::FlexboxLayout::builder()
+            .parent(&cfg_file_frame)
+            .padding(rect(0.0))
+            .child(&cfg_file_label)
+            .child_size(Size { width: D::Points(40.0), height: D::Percent(1.0) })
+            .child(&cfg_file)
+            .child_size(Size { width: D::Percent(1.0), height: D::Percent(1.0) })
+            .build(&cfg_file_flex)?;
+
+        let mut list_file_frame = default();
+        nwg::Frame::builder()
+            .parent(&right_frame)
+            .flags(nwg::FrameFlags::VISIBLE)
+            .build(&mut list_file_frame)?;
+        let mut list_file_label = default();
+        nwg::Label::builder().parent(&list_file_frame).text("List:").build(&mut list_file_label)?;
+        let mut list_file = default();
+        nwg::TextInput::builder()
+            .parent(&list_file_frame)
+            .text("list.txt")
+            .build(&mut list_file)?;
+        let list_file_flex = default();
+        nwg::FlexboxLayout::builder()
+            .parent(&list_file_frame)
+            .padding(rect(0.0))
+            .child(&list_file_label)
+            .child_size(Size { width: D::Points(40.0), height: D::Percent(1.0) })
+            .child(&list_file)
+            .child_size(Size { width: D::Percent(1.0), height: D::Percent(1.0) })
+            .build(&list_file_flex)?;
+
         let right_flex = default();
         nwg::FlexboxLayout::builder()
             .flex_direction(FlexDirection::Column)
             .align_items(AlignItems::Center)
             .parent(&right_frame)
+            .padding(Rect {
+                top: D::Points(0.0),
+                bottom: D::Points(10.0),
+                start: D::Points(20.0),
+                end: D::Points(20.0),
+            })
+            .child(&list_file_frame)
+            .child_size(Size { width: D::Percent(1.0), height: D::Points(35.0) })
+            .child_margin(rect(0.0))
+            .child_flex_grow(0.0)
+            .child_flex_shrink(0.0)
+            .child(&cfg_file_frame)
+            .child_size(Size { width: D::Percent(1.0), height: D::Points(35.0) })
+            .child_margin(rect(0.0))
+            .child_flex_grow(0.0)
+            .child_flex_shrink(0.0)
             .child(&pitch_canvas)
             .child_size(Size { width: D::Percent(1.0), height: D::Percent(1.0) })
+            .child_margin(rect(5.0))
             .child(&radios_frame)
-            .child_size(Size { width: D::Points(400.0), height: D::Points(35.0) })
+            .child_size(Size { width: D::Points(400.0), height: D::Points(40.0) })
+            .child_margin(rect(5.0))
             .build(&right_flex)?;
 
         let root = default();
@@ -159,6 +223,8 @@ impl UiWrapper {
         let window_handle = window.handle;
         let ui = Rc::new(RefCell::new(Ui {
             window,
+            list_file,
+            cfg_file,
             list_select,
             pitch_canvas,
             radios,
@@ -168,6 +234,12 @@ impl UiWrapper {
             cfg_item_offsets: Vec::new(),
             cfg_contents: Vec::new(),
             _other_controls_keepalive: vec![
+                Box::new(cfg_file_label),
+                Box::new(cfg_file_flex),
+                Box::new(cfg_file_frame),
+                Box::new(list_file_label),
+                Box::new(list_file_flex),
+                Box::new(list_file_frame),
                 Box::new(radios_frame),
                 Box::new(right_flex),
                 Box::new(right_frame),
@@ -182,6 +254,9 @@ impl UiWrapper {
                 if let Ok(mut ui) = ui.try_borrow_mut() {
                     use nwg::Event as E;
                     match e {
+                        E::OnMinMaxInfo if h == ui.window => {
+                            data.on_min_max().set_min_size(650, 550);
+                        }
                         E::OnInit if h == ui.window => ui.pitch_painter = Some(PitchPainter::new()),
                         E::OnPaint if h == ui.pitch_canvas => {
                             if let Some(painter) = &ui.pitch_painter {
