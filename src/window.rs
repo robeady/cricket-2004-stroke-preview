@@ -1,6 +1,7 @@
 use crate::data::load_cfg_data;
 use crate::pitch_canvas::PitchPainter;
 use crate::strokes::Stroke;
+use crate::Files;
 use anyhow::Context;
 use hotwatch::{Event, Hotwatch};
 use nwg::stretch::geometry::{Rect, Size};
@@ -10,24 +11,22 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Duration;
 use winapi::shared::windef::HWND;
-use winapi::um::winuser::{PostMessageA, WM_COPYDATA};
 
 fn default<T: Default>() -> T {
     Default::default()
 }
 
-pub fn render_app() -> anyhow::Result<()> {
+pub fn render_app(files: Files) -> anyhow::Result<()> {
     nwg::init()?;
     nwg::Font::set_global_family("Segoe UI")?;
-    let ui = UiWrapper::build()?;
+    let ui = App::build(files)?;
     nwg::dispatch_thread_events();
     Ok(())
 }
 
 struct Watching {
     watcher: Hotwatch,
-    list_file: String,
-    cfg_file: String,
+    files: Files,
 }
 
 pub struct Ui {
@@ -36,8 +35,8 @@ pub struct Ui {
     window: nwg::Window,
     notice_receiver: nwg::Notice,
 
-    list_file: nwg::TextInput,
-    cfg_file: nwg::TextInput,
+    list_file_input: nwg::TextInput,
+    cfg_file_input: nwg::TextInput,
 
     list_select: nwg::ListBox<String>,
     pitch_canvas: nwg::ExternCanvas,
@@ -54,24 +53,24 @@ pub struct Ui {
 }
 
 impl Ui {
-    fn change_data_files(&mut self, list_file: String, cfg_file: String) -> anyhow::Result<()> {
+    fn change_data_files(&mut self, files: Files) -> anyhow::Result<()> {
         let mut changed = false;
-        if list_file != self.watching.list_file {
-            let _ = self.watching.watcher.unwatch(&self.watching.list_file);
+        if files.list_file != self.watching.files.list_file {
+            let _ = self.watching.watcher.unwatch(&self.watching.files.list_file);
             self.watching
                 .watcher
-                .watch(&list_file, watch_callback(&self.notice_receiver))
+                .watch(&files.list_file, watch_callback(&self.notice_receiver))
                 .context("failed to watch list file")?;
-            self.watching.list_file = list_file;
+            self.watching.files.list_file = files.list_file;
             changed = true;
         }
-        if cfg_file != self.watching.cfg_file {
-            let _ = self.watching.watcher.unwatch(&self.watching.cfg_file);
+        if files.cfg_file != self.watching.files.cfg_file {
+            let _ = self.watching.watcher.unwatch(&self.watching.files.cfg_file);
             self.watching
                 .watcher
-                .watch(&cfg_file, watch_callback(&self.notice_receiver))
+                .watch(&files.cfg_file, watch_callback(&self.notice_receiver))
                 .context("failed to watch cfg file")?;
-            self.watching.cfg_file = cfg_file;
+            self.watching.files.cfg_file = files.cfg_file;
             changed = true;
         }
         if changed {
@@ -81,7 +80,7 @@ impl Ui {
     }
 
     fn load_data_files(&mut self) {
-        let new_data = load_cfg_data(&self.watching.list_file, &self.watching.cfg_file);
+        let new_data = load_cfg_data(&self.watching.files);
         match new_data {
             Ok(new_data) => {
                 self.cfg_item_offsets =
@@ -111,12 +110,12 @@ impl Ui {
     }
 }
 
-pub struct UiWrapper {
+pub struct App {
     pub ui: Rc<RefCell<Ui>>,
     handlers: [nwg::EventHandler; 1],
 }
 
-impl Drop for UiWrapper {
+impl Drop for App {
     /// To make sure that everything is freed without issues, the default handler must be unbound.
     fn drop(&mut self) {
         for handler in self.handlers.iter() {
@@ -134,14 +133,8 @@ fn rect(points: f32) -> Rect<D> {
     }
 }
 
-impl UiWrapper {
-    fn build() -> anyhow::Result<UiWrapper> {
-        let default_cfg_file =
-            r"C:\Users\Rob\OneDrive\Projects\Cricket 2004\AI configs\My AI Configs Newer.cfg"
-                .to_string();
-        let default_list_file =
-            r"C:\Users\Rob\OneDrive\Projects\Cricket 2004\AI configs\List.txt".to_string();
-
+impl App {
+    fn build(files: Files) -> anyhow::Result<App> {
         let mut window = default();
         nwg::Window::builder()
             .flags(
@@ -216,18 +209,18 @@ impl UiWrapper {
             .build(&mut cfg_file_frame)?;
         let mut cfg_file_label = default();
         nwg::Label::builder().parent(&cfg_file_frame).text("Cfg:").build(&mut cfg_file_label)?;
-        let mut cfg_file = default();
+        let mut cfg_file_input = default();
         nwg::TextInput::builder()
             .parent(&cfg_file_frame)
-            .text(&default_cfg_file)
-            .build(&mut cfg_file)?;
+            .text(&files.cfg_file)
+            .build(&mut cfg_file_input)?;
         let cfg_file_flex = default();
         nwg::FlexboxLayout::builder()
             .parent(&cfg_file_frame)
             .padding(rect(0.0))
             .child(&cfg_file_label)
             .child_size(Size { width: D::Points(40.0), height: D::Percent(1.0) })
-            .child(&cfg_file)
+            .child(&cfg_file_input)
             .child_size(Size { width: D::Percent(1.0), height: D::Percent(1.0) })
             .build(&cfg_file_flex)?;
 
@@ -238,18 +231,18 @@ impl UiWrapper {
             .build(&mut list_file_frame)?;
         let mut list_file_label = default();
         nwg::Label::builder().parent(&list_file_frame).text("List:").build(&mut list_file_label)?;
-        let mut list_file = default();
+        let mut list_file_input = default();
         nwg::TextInput::builder()
             .parent(&list_file_frame)
-            .text(&default_list_file)
-            .build(&mut list_file)?;
+            .text(&files.list_file)
+            .build(&mut list_file_input)?;
         let list_file_flex = default();
         nwg::FlexboxLayout::builder()
             .parent(&list_file_frame)
             .padding(rect(0.0))
             .child(&list_file_label)
             .child_size(Size { width: D::Points(40.0), height: D::Percent(1.0) })
-            .child(&list_file)
+            .child(&list_file_input)
             .child_size(Size { width: D::Percent(1.0), height: D::Percent(1.0) })
             .build(&list_file_flex)?;
 
@@ -298,13 +291,12 @@ impl UiWrapper {
         let mut ui = Ui {
             watching: Watching {
                 watcher: Hotwatch::new_with_custom_delay(Duration::from_millis(200))?,
-                list_file: String::new(),
-                cfg_file: String::new(),
+                files: Files { list_file: String::new(), cfg_file: String::new() },
             },
             window,
             notice_receiver,
-            list_file,
-            cfg_file,
+            list_file_input,
+            cfg_file_input,
             list_select,
             pitch_canvas,
             radios,
@@ -327,7 +319,7 @@ impl UiWrapper {
             ],
         };
 
-        let _ = ui.change_data_files(default_list_file, default_cfg_file);
+        let _ = ui.change_data_files(files);
 
         let ui = Rc::new(RefCell::new(ui));
 
@@ -358,11 +350,11 @@ impl UiWrapper {
                             let i = ui.list_select.selection();
                             ui.update_selected_stroke(i);
                         }
-                        E::OnTextInput if h == ui.cfg_file || h == ui.list_file => {
-                            let list_file = ui.list_file.text();
-                            let cfg_file = ui.cfg_file.text();
+                        E::OnTextInput if h == ui.cfg_file_input || h == ui.list_file_input => {
+                            let list_file = ui.list_file_input.text();
+                            let cfg_file = ui.cfg_file_input.text();
                             // this does IO on the main thread, but it won't be that slow
-                            if let Err(e) = ui.change_data_files(list_file, cfg_file) {
+                            if let Err(e) = ui.change_data_files(Files { list_file, cfg_file }) {
                                 println!("error changing data files: {:#}", e);
                             };
                         }
@@ -379,7 +371,7 @@ impl UiWrapper {
             }
         });
 
-        Ok(UiWrapper { ui, handlers: [handler] })
+        Ok(App { ui, handlers: [handler] })
     }
 }
 

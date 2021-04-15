@@ -3,13 +3,15 @@ use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
 
 use anyhow::Context;
 
+use crate::Files;
+
 pub struct CfgData {
     pub cfg_items: Vec<(String, i64)>,
     pub cfg_contents: Vec<u8>,
 }
 
-pub fn load_cfg_data(list_file: &str, cfg_file: &str) -> anyhow::Result<CfgData> {
-    let mut cfg_items: Vec<_> = read_list_file(list_file)?
+pub fn load_cfg_data(files: &Files) -> anyhow::Result<CfgData> {
+    let mut cfg_items: Vec<_> = read_list_file(&files.list_file)?
         .map(|s| {
             let parts = s.split(",").collect::<Vec<_>>();
             (parts[0].to_string(), parts[1].parse::<i64>().unwrap())
@@ -19,7 +21,7 @@ pub fn load_cfg_data(list_file: &str, cfg_file: &str) -> anyhow::Result<CfgData>
         .collect();
     cfg_items.sort_by_key(|(_, offset)| *offset);
 
-    let cfg_contents = read_strokes_from_ai_cfg_file(cfg_file)?;
+    let cfg_contents = read_strokes_from_ai_cfg_file(&files.cfg_file)?;
 
     Ok(CfgData { cfg_items, cfg_contents })
 }
