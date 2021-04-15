@@ -1,9 +1,7 @@
+use crate::Files;
+use anyhow::Context;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
-
-use anyhow::Context;
-
-use crate::Files;
 
 pub struct CfgData {
     pub cfg_items: Vec<(String, i64)>,

@@ -1,17 +1,11 @@
+use crate::strokes::{Stroke, StrokeTiming};
 use std::cmp::min;
 use std::f64::consts::TAU;
-
-use winapi::{
-    shared::windef::{HBRUSH, HDC, RECT},
-    um::{
-        wingdi::{
-            CreateSolidBrush, Ellipse, GetStockObject, Pie, SelectObject, NULL_PEN, RGB, WHITE_PEN,
-        },
-        winuser::{FillRect, GetSysColorBrush, COLOR_MENU},
-    },
+use winapi::shared::windef::{HBRUSH, HDC, RECT};
+use winapi::um::wingdi::{
+    CreateSolidBrush, Ellipse, GetStockObject, Pie, SelectObject, NULL_PEN, RGB, WHITE_PEN,
 };
-
-use crate::strokes::{Stroke, StrokeTiming};
+use winapi::um::winuser::{FillRect, GetSysColorBrush, COLOR_MENU};
 
 pub struct PitchPainter {
     background: HBRUSH,
@@ -87,7 +81,6 @@ impl PitchPainter {
         paint.end_paint(&ps);
     }
 
-    /// brush should be semi-transparent as we will draw twice, once for min power and once for max
     fn paint_stroke_segment(
         &self,
         hdc: HDC,

@@ -1,0 +1,457 @@
+//Colin's List.txt file Last updated 23-1-2005
+Screen ID 0 = main menu,65146881,8
+Screen ID 1 = play now,65359873,18
+Screen ID 2 = change line up,62947329,178
+Screen ID 3 = change location,62928897,8
+Screen ID 5 = options menu,65175553,6
+Screen ID 6 = game options,65187841,16
+Screen ID 7 = remap controllers,63133697,28
+Screen ID 8 = sound options,65212417,6
+Screen ID 9 = display options,65181697,6
+Screen ID 10 = memory card options,65204225,8
+Screen ID 11 = game modes menu,64143361,8
+Screen ID 13 = australian state menu,62822401,6
+Screen ID 15 = english county menu,63451137,6
+Screen ID 19 = load game,65155073,10
+Screen ID 20 = select foreign tour,63905793,12
+Screen ID 21 = international season hub,64937985,36
+Screen ID 26 = english county full season schedule divisions and match length,63457281,8
+Screen ID 27 = frizzell championship schedule and divisions,63260673,6
+Screen ID 28 = national league schedule divisions and match length,63182849,8
+Screen ID 29 = c&g trophy schedule and match length,63336449,6
+Screen ID 30 = frizzell championship team select,63287297,42
+Screen ID 31 = frizzell championship hub screen,63266817,12
+Screen ID 40 = national league hub screen,63191041,12
+Screen ID 47 = national league team select,63211521,42
+Screen ID 48 = c&g trophy main hub screen,63342593,12
+Screen ID 49 = c&g standings,63369217,32
+Screen ID 55 = c&g trophy team select,63401985,42
+Screen ID 56 = pura cup hub screen,62869505,12
+Screen ID 59 = statistics menu,62881793,8
+Screen ID 63 = pura cup team select,62889985,18
+Screen ID 64 = pura cup schedule,62865409,4
+Screen ID 65 = ing cup schedule and match length,62779393,6
+Screen ID 66 = australian full season schedule and match length,62828545,6
+Screen ID 67 = ing cup hub screen,62785537,12
+Screen ID 74 = ing cup team select,62797825,18
+Screen ID 75 = select user pre main menu,65980417,6
+Screen ID 76 = create user pre main menu,65949697,24
+Screen ID 77 = australian full season hub screen,62834689,12
+Screen ID 84 = australian full season team select,62846977,18
+Screen ID 85 = intournament team statistics,65767425,10
+Screen ID 86 = controller select,63166465,10
+Screen ID 87 = conditions select,62937089,10
+Screen ID 88 = international menu,64839681,6
+Screen ID 89 = test series team select,65101825,22
+Screen ID 90 = test series hub screen,65085441,12
+Screen ID 91 = world championship schedule and match length,66105345,6
+Screen ID 92 = world championship select host nation,66154497,34
+Screen ID 93 = world championship hub screen,66043905,12
+Screen ID 94 = world championship super six hub screen,66111489,12
+Screen ID 95 = world championship semi final hub screen,66080769,14
+Screen ID 96 = world championship final hub screen,65986561,16
+Screen ID 97 = squad select,65753089,14
+Screen ID 98 = partnership statistics,65824769,28
+Screen ID 99 = fixtures,65814529,10
+Screen ID 100 = scorecard,65851393,14
+Screen ID 101 = match summary,65878017,6
+Screen ID 102 = view squad,65740801,12
+Screen ID 103 = english county full season hub screen,63481857,12
+Screen ID 104 = english county full season team select,63494145,42
+Screen ID 105 = c&g preliminary round hub,63354881,14
+Screen ID 107 = world series team select,66238465,26
+Screen ID 108 = world series hub screen,66211841,12
+Screen ID 109 = world series standings,66224129,8
+Screen ID 110 = world series final hub screen,66195457,16
+Screen ID 111 = world championship group stage standings,66002945,40
+Screen ID 112 = world championship super six standings,66056193,24
+Screen ID 113 = knockout team select,64798721,34
+Screen ID 114 = knockout hub screen,64751617,12
+Screen ID 115 = knockout standings,64780289,18
+Screen ID 116 = international season team select,64913409,24
+Screen ID 117 = batting statistics,65777665,12
+Screen ID 118 = bowling statistics,65789953,12
+Screen ID 119 = fielding statistics,65802241,12
+Screen ID 120 = international season skill level and match length,64905217,8
+Screen ID 121 = international season standings screen,64995329,6
+Screen ID 122 = international season dhaka standings,64974849,20
+Screen ID 123 = international season sharjah standings,65001473,8
+Screen ID 124 = international season test championship standings,65009665,8
+Screen ID 125 = international season rankings screen,64845825,6
+Screen ID 126 = international season team test rankings,64894977,10
+Screen ID 127 = international season team odi rankings,64884737,10
+Screen ID 128 = international season batting test rankings,64860161,8
+Screen ID 129 = international season batting odi rankings,64851969,8
+Screen ID 130 = international season bowling test rankings,64876545,8
+Screen ID 131 = international season bowling odi rankings,64868353,8
+Screen ID 132 = international season world championship group stage standings,65038337,38
+Screen ID 133 = international season world championship super six standings,65017857,20
+Screen ID 134 = international season world series standings,65077249,8
+Screen ID 135 = nets bat/bowl select,65378305,6
+Screen ID 136 = quit game screen,65384449,4
+Screen ID 137 = ea sports extras,63176705,6
+Screen ID 138 = controller select,65921025,10
+Screen ID 139 = unknown,62916609,2
+Screen ID 140 = save game,65165313,10
+Screen ID 141 = long australia tour hub screen,63543297,36
+Screen ID 142 = short australia tour hub screen,63598593,36
+Screen ID 143 = caribbean tour hub screen,63653889,36
+Screen ID 144 = long england tour hub screen,63709185,36
+Screen ID 145 = short england tour hub screen,63764481,36
+Screen ID 146 = australia ashes tour hub screen,63819777,36
+Screen ID 147 = england ashes tour hub screen,63862785,36
+Screen ID 148 = one day circuit tour hub screen,63985665,36
+Screen ID 149 = south africa tour hub screen,64028673,36
+Screen ID 150 = sub-continent tour hub screen,64088065,36
+Screen ID 151 = zimbabwe/new zealand hub screen,63918081,36
+Screen ID 152 = long australia tour select team,63580161,12
+Screen ID 153 = short australia tour select team,63635457,12
+Screen ID 154 = caribbean tour select team,63690753,12
+Screen ID 155 = long england tour select team,63746049,12
+Screen ID 156 = short england tour select team,63801345,12
+Screen ID 158 = main menu (not used),63125505,8
+Screen ID 159 = summary (not used),65894401,26
+Screen ID 161 = one day circuit tour select team,63973377,12
+Screen ID 162 = south africa tour select team,64065537,12
+Screen ID 163 = sub-continent tour select team,64124929,12
+Screen ID 164 = zimbabwe/new zealand select team,63954945,12
+Screen ID 165 = hall of fame,64444417,8
+Screen ID 166 = challenges record,64292865,10
+Screen ID 167 = tournament records,64735233,16
+Screen ID 168 = one day records menu,64208897,8
+Screen ID 169 = od batting records,64151553,28
+Screen ID 170 = od bowling records,64180225,28
+Screen ID 171 = od partnership records,64217089,30
+Screen ID 172 = od record,64247809,16
+Screen ID 173 = od team records,64264193,28
+Screen ID 174 = test records menu,64651265,8
+Screen ID 175 = test batting records,64593921,28
+Screen ID 176 = test bowling Records,64622593,28
+Screen ID 177 = test partnership records,64659457,30
+Screen ID 178 = test record,64690177,16
+Screen ID 179 = test team records,64706561,28
+Screen ID 180 = one day international records menu,64509953,8
+Screen ID 181 = odi batting records,64452609,28
+Screen ID 182 = odi bowling records,64481281,28
+Screen ID 183 = odi partnership records,64518145,30
+Screen ID 184 = odi records,64548865,16
+Screen ID 185 = odi team records,64565249,28
+Screen ID 186 = first class records menu,64360449,8
+Screen ID 187 = fc batting records,64303105,28
+Screen ID 188 = fc bowling records,64331777,28
+Screen ID 189 = fc partnership records,64368641,30
+Screen ID 190 = fc record,64399361,16
+Screen ID 191 = fc team records,64415745,28
+Screen ID 192 = delete user,65974273,6
+Screen ID 193 = select user,65943553,6
+Screen ID 194 = domestic season standings,65865729,12
+Screen ID 195 = challenge mode,62918657,10
+Screen ID 196 = team records,65884161,10
+Screen ID 197 = team management create player personal info,65396737,22
+Screen ID 198 = team management unknown,65419265,8
+Screen ID 199 = team management create player basic,65427457,28
+Screen ID 200 = team management create player batting1,65454081,30
+Screen ID 201 = team management create player batting2,65484801,40
+Screen ID 202 = team management create player bowling,65525761,32
+Screen ID 203 = team management create player fielding-misc,65558529,30
+Screen ID 204 = team management create player skills,65589249,34
+Screen ID 205 = team management create player statistics,65624065,28
+Screen ID 206 = team management create player assign sound,65652737,10
+Screen ID 207 = team management create player change player name,65710081,24
+Screen ID 208 = frizzell championship winner,63330305,6
+Screen ID 209 = national league winner,63254529,6
+Screen ID 210 = c&g winner,63444993,6
+Screen ID 212 = pura winner,62908417,6
+Screen ID 213 = ing winner,62816257,6
+Screen ID 215 = test series winner,65128449,6
+Screen ID 216 = world championship winner,66189313,6
+Screen ID 217 = world series winner,66265089,6
+Screen ID 218 = knockout winner,64833537,6
+Screen ID 220 = long australia tour winner,63592449,6
+Screen ID 221 = short australia tour winner,63647745,6
+Screen ID 222 = caribbean tour winner,63703041,6
+Screen ID 223 = long england tour winner,63758337,6
+Screen ID 224 = short england tour winner,63813633,6
+Screen ID 225 = australian ashes tour winner,63856641,6
+Screen ID 226 = english ashes tour winner,63899649,6
+Screen ID 227 = one day circuit tour winner,64022529,6
+Screen ID 228 = south african tour winner,64077825,6
+Screen ID 229 = sub-continent tour winner,64137217,6
+Screen ID 230 = zimbabwe/new zealand tour winner,63967233,6
+Screen ID 231 = world championship semi final standings,66095105,10
+Screen ID 232 = trophy cabinet,65931265,12
+Screen ID 233 = world series match length,66232321,6
+Screen ID 234 = test series series length,65097729,6
+Screen ID 235 = foreign tour odi match length,64083969,6
+Screen ID 236 = knockout match length,64763905,6
+Screen ID 237 = credits,63160321,6
+Screen ID 238 = test series squad select,65124353,4
+Screen ID 239 = world championship select host nation(s),65134593,12
+Screen ID 240 = knockout select host nation(s),64768001,12
+Screen ID 241 = team management add to database,65662977,16
+Screen ID 242 = team management delete player,65695745,8
+Screen ID 243 = team management base copy,65679361,16
+Screen ID 244 = team management menu,65703937,6
+Screen ID 245 = player information,65218561,138
+Screen ID 246 = game infomation,65734657,6
+Screen ID 247 = national league summary,63203329,8
+Screen ID 248 = frizzell championship summary,63279105,8
+Screen ID 249 = national league summary (full season),63465473,8
+Screen ID 250 = frizzell championship summary (full season),63473665,8
+Screen ID 256 = unknown,63537153,6
+Screen ID 257 = unknown,62914561,2
+Screen ID 0 (inmatch) = pause menu,498188289,16
+Screen ID 1 (inmatch) = tv overlay,498030593,50
+Screen ID 2 (inmatch) = debug options,498026497,4
+Screen ID 3 (inmatch) = end of over,497983489,14
+Screen ID 4 (inmatch) = end of innings,497969153,14
+Screen ID 5 (inmatch) = end of game,497954817,14
+Screen ID 6 (inmatch) = scorecard,498372609,14
+Screen ID 7 (inmatch) = old menu,498120705,6
+Screen ID 8 (inmatch) = match conditions,498157569,12
+Screen ID 9 (inmatch) = batting order,497827841,36
+Screen ID 10 (inmatch) = statistics,498358273,14
+Screen ID 14 (inmatch) = spider,498325505,20
+Screen ID 15 (inmatch) = options,498288641,18
+Screen ID 15 (inmatch) = options (as above),498307073,18
+Screen ID 16 (inmatch) = worm,498515969,18
+Screen ID 17 (inmatch) = heartbeat,498081793,12
+Screen ID 18 (inmatch) = replays,498241537,6
+Screen ID 18 (inmatch) = replays (as above),498247681,6
+Screen ID 19 (inmatch) = wagon wheel,498495489,20
+Screen ID 20 (inmatch) = partnership,498169857,18
+Screen ID 21 (inmatch) = autoplay,497807361,10
+Screen ID 22 (inmatch) = field editor,497999873,26
+Screen ID 23 (inmatch) = manhattan,498126849,30
+Screen ID 24 (inmatch) = save game,498253825,10
+Screen ID 24 (inmatch) = save game (as above),498264065,12
+Screen ID 24 (inmatch) = save game (as above),498276353,12
+Screen ID 25 (inmatch) = change bowler,497876993,32
+Screen ID 26 (inmatch) = debug menu,497936385,4
+Screen ID 27 (inmatch) = start of match,498345985,12
+Screen ID 32 (inmatch) = post coin toss,497917953,12
+Screen ID 33 (inmatch) = view teams,498094081,12
+Screen ID 34 (inmatch) = Camera,497909761,8
+Screen ID 35 (inmatch) = team select,498401281,88
+Screen ID 36 (inmatch) = batting stats,497817601,10
+Screen ID 37 (inmatch) = bowling stats,497864705,12
+Screen ID 38 (inmatch) = lunch,498106369,14
+Screen ID 39 (inmatch) = tea,498386945,14
+Screen ID 40 (inmatch) = close of play,497940481,14
+Screen ID 252 (inmatch) = practice menu,498204673,12
+Screen ID 252 (inmatch) = practice menu (as above),498229249,12
+Screen ID 253 (inmatch) = practice,498216961,6
+Screen ID 253 (inmatch) = practice,498223105,6
+Screen ID 254 (inmatch) = run radar,498491393,4
+Screen ID 255 (inmatch) = bowl editor,497930241,6
+ODI Easy,25665537,2
+ODI Normal,25669633,2
+ODI Hard,25667585,2
+Test Easy,25690113,2
+Test Normal,25694209,2
+Test Hard,25692161,2
+CPU Pacing ODI - 10 overs,25673729,4
+CPU Pacing ODI - 20 overs,25677825,4
+CPU Pacing ODI - 45 overs,25681921,4
+CPU Pacing ODI - 50 overs,25686017,4
+Ball Conditions,25628673,2
+Batpad (med/fast),558891009,2
+Batpad (Spin),558893057,2
+Back Cover (& 6 hit),558991361,2
+Back def1(all),558944257,2
+Back def2(slight jump/body behind line/played straight),558946305,2
+Back def3(high),558948353,2
+Back def4,558950401,2
+Back def5,558952449,2
+Back def6(high),558954497,2
+Back def7,558956545,2
+Back def(spin),558958593,2
+Edge fast 1,558895105,2
+Edge fast 2,558897153,2
+Edge fast 3,558899201,2
+Edge fast 4,558901249,2
+Edge default,558903297,2
+Edge spin 1,558905345,2
+Edge spin 2,558907393,2
+Edge spin default,558909441,2
+Forward def1(bat from finelg/no gap/slow retraction/push to longoff),558931969,2
+Forward def2(spin defence/get to pitch of the ball/push into the ground),558934017,2
+Forward def3(bat from slip/tap to long on/wrist turn to sq leg/like leg glance),558936065,2
+Forward def4(yorker?),558938113,2
+Forward def5(front foot to offside/gap+),558940161,2
+Forward def6(like 1/from keeper/no gap/longoff/quick withdrawal/for overpitched),558942209,2
+Front leave 1,558911489,2
+Front leave 2,558913537,2
+Front leave 3,558915585,2
+Back leave 1,558917633,2
+Back leave 2,558919681,2
+Back leave 3,558921729,2
+Back leave 4,558923777,2
+Back leave 5,558925825,2
+Backfoot leg Glance fast,559022081,2
+Backfoot leg glance spin,559024129,2
+Back ondrive(& 6 Hit),559007745,2
+Back straight,558999553,2
+Back straight 6 Hit,559009793,2
+Back steer 1(backleg moves to 2nd slip/steer),558962689,2
+Back steer 2,558964737,2
+Back steer 3,558966785,2
+Back steer 4,558968833,2
+Cover drive def (low follow through),558985217,2
+Cover drive attack(high follow through/weight on front foot),558987265,2
+Cover drive 6 hit( high follow/weight on back foot/standing tall),558989313,2
+Straight drive (main),558993409,2
+Straight drive 2(step out to offstump/swipe to longoff/like cover drive),558995457,2
+Straight drive 3(overpitched/swipe to long off),558997505,2
+Straight drive advance drive,559058945,2
+Straight drive 6 Hit (all),559048705,2
+Straight drive advance + 6 hit,559071233,2
+Hook 1,559036417,2
+Hook 2,559038465,2
+Hook 3,559040513,2
+Hook 4,559042561,2
+Hook 5,559046657,2
+Hook 6 hit,559044609,2
+Late cut 1,558960641,2
+Leg glance 1 (fast yorker),559011841,2
+Leg glance 2(step forward/flick to sq leg),559013889,2
+Leg glance 3(spin/step out/turn to sq leg/like ondrive),559015937,2
+Leg glance 4(??),559017985,2
+Leg glance 5( frontfoot/all spin/quicks shortball),559020033,2
+Leg glance 6(advance),559063041,2
+On drive 1(??),559001601,2
+On drive 2(overpitched/swipe/high follow),559003649,2
+On drive 3(defensive push/low follow),559005697,2
+On drive 4(advance swipe),559060993,2
+On drive (simple 6 Hit),559050753,2
+On drive (advance + 6 hit),559069185,2
+Rev sweep?,559056897,2
+Pull,559032321,2
+Pull advance,559034369,2
+Square cut 1,558972929,2
+Square cut 2(foot up/wt back leg/face to longoff),558974977,2
+Square cut 3(front knee up/6 hit),558977025,2
+Square cut 4(6 hit cut against spin),558979073,2
+Square cut 5(cut aginst spin),558981121,2
+Square cut 6(wt both legs/facing point/legs together),558983169,2
+Square drive ,558970881,2
+Square drive advance,559067137,2
+Sweep front foot (fast and spin),559026177,2
+Sweep back foot (spin),559054849,2
+Sweep paddle (??),559028225,2
+Sweep paddle (all),559030273,2
+Camera,25593857,8
+Fast (test) aggressive1,26513409,2
+Fast (test) aggressive2,26515457,2
+Fast (test) aggressive3,26517505,2
+Fast (test) attack1,26519553,2
+Fast (test) attack2,26521601,2
+Fast (test) attack3,26523649,2
+Fast (test) defend1,26525697,2
+Fast (test) defend2,26527745,2
+Fast (test) retreat1,26529793,2
+Fast (test) retreat2,26531841,2
+Fast (test) standard1,26533889,2
+Fast (test) standard2,26535937,2
+Fast (test) standard3,26537985,2
+Fast (test) tight1,26540033,2
+Fast (test) tight2,26542081,2
+Medium (test) aggressive1,26605569,2
+Medium (test) aggressive2,26607617,2
+Medium (test) aggressive3,26609665,2
+Medium (test) attack1,26611713,2
+Medium (test) attack2,26613761,2
+Medium (test) attack3,26615809,2
+Medium (test) defend1,26617857,2
+Medium (test) defend2,26619905,2
+Medium (test) retreat1,26621953,2
+Medium (test) retreat2,26624001,2
+Medium (test) standard1,26626049,2
+Medium (test) standard2,26628097,2
+Medium (test) standard3,26630145,2
+Medium (test) tight1,26632193,2
+Medium (test) tight2,26634241,2
+Leg Spin (test) aggressive1,26544129,2
+Leg Spin (test) aggressive2,26546177,2
+Leg Spin (test) aggressive3,26548225,2
+Leg Spin (test) attack1,26550273,2
+Leg Spin (test) attack2,26552321,2
+Leg Spin (test) attack3,26554369,2
+Leg Spin (test) defend1,26556417,2
+Leg Spin (test) defend2,26558465,2
+Leg Spin (test) retreat1,26560513,2
+Leg Spin (test) retreat2,26562561,2
+Leg Spin (test) standard1,26564609,2
+Leg Spin (test) standard2,26566657,2
+Leg Spin (test) standard3,26568705,2
+Leg Spin (test) tight1,26570753,2
+Leg Spin (test) tight2,26572801,2
+Off Spin (test) aggressive1,26646529,2
+Off Spin (test) aggressive2,26648577,2
+Off Spin (test) aggressive3,26650625,2
+Off Spin (test) attack1,26652673,2
+Off Spin (test) attack2,26654721,2
+Off Spin (test) attack3,26656769,2
+Off Spin (test) defend1,26658817,2
+Off Spin (test) defend2,26660865,2
+Off Spin (test) retreat1,26662913,2
+Off Spin (test) retreat2,26664961,2
+Off Spin (test) standard1,26667009,2
+Off Spin (test) standard2,26669057,2
+Off Spin (test) standard3,26640385,2
+Off Spin (test) tight1,26673153,2
+Off Spin (test) tight2,26675201,2
+Fast (ODI) defend1,26482689,2
+Fast (ODI) defend2,26484737,2
+Fast (ODI) defend3,26486785,2
+Fast (ODI) defend4,26488833,2
+Fast (ODI) defend5,26480641,2
+Fast (ODI) normal1,26492929,2
+Fast (ODI) normal2,26494977,2
+Fast (ODI) normal3,26497025,2
+Fast (ODI) normal4,26499073,2
+Fast (ODI) normal5,26501121,2
+Fast (ODI) open1,26503169,2
+Fast (ODI) open2,26505217,2
+Fast (ODI) open3,26507265,2
+Fast (ODI) open4,26509313,2
+Fast (ODI) open5,26511361,2
+Medium (ODI) defend1,26574849,2
+Medium (ODI) defend2,26576897,2
+Medium (ODI) defend3,26578945,2
+Medium (ODI) defend4,26580993,2
+Medium (ODI) defend5,26583041,2
+Medium (ODI) normal1,26585089,2
+Medium (ODI) normal2,26587137,2
+Medium (ODI) normal3,26589185,2
+Medium (ODI) normal4,26591233,2
+Medium (ODI) normal5,26593281,2
+Medium (ODI) open1,26595329,2
+Medium (ODI) open2,26597377,2
+Medium (ODI) open3,26599425,2
+Medium (ODI) open4,26601473,2
+Medium (ODI) open5,26603521,2
+Slow (ODI) defend1,26687489,2
+Slow (ODI) defend2,26689537,2
+Slow (ODI) defend3,26691585,2
+Slow (ODI) defend4,26693633,2
+Slow (ODI) defend5,26695681,2
+Slow (ODI) normal1,26697729,2
+Slow (ODI) normal2,26697729,2
+Slow (ODI) normal3,26701825,2
+Slow (ODI) normal4,26703873,2
+Slow (ODI) normal5,26705921,2
+Slow (ODI) open1,26707969,2
+Slow (ODI) open2,26710017,2
+Slow (ODI) open3,26712065,2
+Slow (ODI) open4,26714113,2
+Slow (ODI) open5,26716161,2
+Bowl fast,25528321,2
+Bowl fast slow ball,25530369,2
+Bowl Flipper,25532417,2
+Bowl Googly,25534465,2
+Bowl Leg spin regular,25536513,2
+Bowl arm ball,25538561,2
+Bowl Off Spin regular,25540609,2
+Bowl inswing,25542657,2
+Bowl swing,25544705,2
