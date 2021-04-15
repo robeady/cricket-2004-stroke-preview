@@ -1,31 +1,40 @@
+use crate::data::load_cfg_data;
 use crate::pitch_canvas::PitchPainter;
 use crate::strokes::Stroke;
+use anyhow::Context;
+use hotwatch::{Event, Hotwatch};
 use nwg::stretch::geometry::{Rect, Size};
 use nwg::stretch::style::{AlignItems, Dimension as D, FlexDirection};
 use std::any::Any;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::time::Duration;
+use winapi::shared::windef::HWND;
+use winapi::um::winuser::{PostMessageA, WM_COPYDATA};
 
 fn default<T: Default>() -> T {
     Default::default()
 }
 
-pub fn render_ui(initial_data: UiData) -> anyhow::Result<()> {
+pub fn render_app() -> anyhow::Result<()> {
     nwg::init()?;
     nwg::Font::set_global_family("Segoe UI")?;
     let ui = UiWrapper::build()?;
-    ui.ui.borrow_mut().update_data(initial_data);
     nwg::dispatch_thread_events();
     Ok(())
 }
 
-pub struct UiData {
-    pub cfg_items: Vec<(String, i64)>,
-    pub cfg_contents: Vec<u8>,
+struct Watching {
+    watcher: Hotwatch,
+    list_file: String,
+    cfg_file: String,
 }
 
 pub struct Ui {
+    watching: Watching,
+
     window: nwg::Window,
+    notice_receiver: nwg::Notice,
 
     list_file: nwg::TextInput,
     cfg_file: nwg::TextInput,
@@ -45,12 +54,60 @@ pub struct Ui {
 }
 
 impl Ui {
-    pub fn update_data(&mut self, new_data: UiData) {
-        self.cfg_item_offsets = new_data.cfg_items.iter().map(|(_, offset)| *offset).collect();
-        self.cfg_contents = new_data.cfg_contents;
+    fn change_data_files(&mut self, list_file: String, cfg_file: String) -> anyhow::Result<()> {
+        let mut changed = false;
+        if list_file != self.watching.list_file {
+            let _ = self.watching.watcher.unwatch(&self.watching.list_file);
+            self.watching
+                .watcher
+                .watch(&list_file, watch_callback(&self.notice_receiver))
+                .context("failed to watch list file")?;
+            self.watching.list_file = list_file;
+            changed = true;
+        }
+        if cfg_file != self.watching.cfg_file {
+            let _ = self.watching.watcher.unwatch(&self.watching.cfg_file);
+            self.watching
+                .watcher
+                .watch(&cfg_file, watch_callback(&self.notice_receiver))
+                .context("failed to watch cfg file")?;
+            self.watching.cfg_file = cfg_file;
+            changed = true;
+        }
+        if changed {
+            self.load_data_files();
+        }
+        Ok(())
+    }
+
+    fn load_data_files(&mut self) {
+        let new_data = load_cfg_data(&self.watching.list_file, &self.watching.cfg_file);
+        match new_data {
+            Ok(new_data) => {
+                self.cfg_item_offsets =
+                    new_data.cfg_items.iter().map(|(_, offset)| *offset).collect();
+                self.cfg_contents = new_data.cfg_contents;
+                let previous_selection = self.list_select.selection();
+                let new_cfg_items_len = new_data.cfg_items.len();
+                self.list_select
+                    .set_collection(new_data.cfg_items.into_iter().map(|(name, _)| name).collect());
+                self.update_selected_stroke(previous_selection.filter(|&i| i < new_cfg_items_len));
+            }
+            Err(e) => {
+                println!("failed to load data files: {:#}", e)
+            }
+        }
+    }
+
+    fn update_selected_stroke(&mut self, selection_index: Option<usize>) {
+        self.selected_stroke = selection_index.map(|i| {
+            parse_stroke(
+                &self.cfg_contents,
+                self.cfg_item_offsets[i],
+                self.cfg_item_offsets.get(i + 1).copied(),
+            )
+        });
         self.pitch_canvas.invalidate();
-        self.list_select
-            .set_collection(new_data.cfg_items.into_iter().map(|(name, _)| name).collect());
     }
 }
 
@@ -79,6 +136,12 @@ fn rect(points: f32) -> Rect<D> {
 
 impl UiWrapper {
     fn build() -> anyhow::Result<UiWrapper> {
+        let default_cfg_file =
+            r"C:\Users\Rob\OneDrive\Projects\Cricket 2004\AI configs\My AI Configs Newer.cfg"
+                .to_string();
+        let default_list_file =
+            r"C:\Users\Rob\OneDrive\Projects\Cricket 2004\AI configs\List.txt".to_string();
+
         let mut window = default();
         nwg::Window::builder()
             .flags(
@@ -91,7 +154,7 @@ impl UiWrapper {
 
         let mut list_select = default();
         nwg::ListBox::builder()
-            .collection(vec!["a".to_string()])
+            .collection(Vec::new())
             .size((300, 10))
             .parent(&window)
             .build(&mut list_select)?;
@@ -130,6 +193,11 @@ impl UiWrapper {
             nwg::RadioButton::builder()
                 .parent(&radios_frame)
                 .flags(if i == 0 { Flags::VISIBLE | Flags::GROUP } else { Flags::VISIBLE })
+                .check_state(if i == 2 {
+                    nwg::RadioButtonState::Checked
+                } else {
+                    nwg::RadioButtonState::Unchecked
+                })
                 .text(text)
                 .build(&mut radios[i])?;
             flex_builder = flex_builder
@@ -149,7 +217,10 @@ impl UiWrapper {
         let mut cfg_file_label = default();
         nwg::Label::builder().parent(&cfg_file_frame).text("Cfg:").build(&mut cfg_file_label)?;
         let mut cfg_file = default();
-        nwg::TextInput::builder().parent(&cfg_file_frame).text("AI.cfg").build(&mut cfg_file)?;
+        nwg::TextInput::builder()
+            .parent(&cfg_file_frame)
+            .text(&default_cfg_file)
+            .build(&mut cfg_file)?;
         let cfg_file_flex = default();
         nwg::FlexboxLayout::builder()
             .parent(&cfg_file_frame)
@@ -170,7 +241,7 @@ impl UiWrapper {
         let mut list_file = default();
         nwg::TextInput::builder()
             .parent(&list_file_frame)
-            .text("list.txt")
+            .text(&default_list_file)
             .build(&mut list_file)?;
         let list_file_flex = default();
         nwg::FlexboxLayout::builder()
@@ -220,9 +291,18 @@ impl UiWrapper {
             .child_flex_grow(2.0)
             .build(&root)?;
 
+        let mut notice_receiver = default();
+        nwg::Notice::builder().parent(&window).build(&mut notice_receiver)?;
+
         let window_handle = window.handle;
-        let ui = Rc::new(RefCell::new(Ui {
+        let mut ui = Ui {
+            watching: Watching {
+                watcher: Hotwatch::new_with_custom_delay(Duration::from_millis(200))?,
+                list_file: String::new(),
+                cfg_file: String::new(),
+            },
             window,
+            notice_receiver,
             list_file,
             cfg_file,
             list_select,
@@ -245,7 +325,11 @@ impl UiWrapper {
                 Box::new(right_frame),
                 Box::new(root),
             ],
-        }));
+        };
+
+        let _ = ui.change_data_files(default_list_file, default_cfg_file);
+
+        let ui = Rc::new(RefCell::new(ui));
 
         let event_ui = Rc::downgrade(&ui);
         let handler = nwg::full_bind_event_handler(&window_handle, move |e, data, h| {
@@ -254,6 +338,9 @@ impl UiWrapper {
                 if let Ok(mut ui) = ui.try_borrow_mut() {
                     use nwg::Event as E;
                     match e {
+                        E::OnNotice if h == ui.notice_receiver => {
+                            ui.load_data_files();
+                        }
                         E::OnMinMaxInfo if h == ui.window => {
                             data.on_min_max().set_min_size(650, 550);
                         }
@@ -268,14 +355,16 @@ impl UiWrapper {
                             }
                         }
                         E::OnListBoxSelect if h == ui.list_select => {
-                            if let Some(i) = ui.list_select.selection() {
-                                ui.selected_stroke = Some(parse_stroke(
-                                    &ui.cfg_contents,
-                                    ui.cfg_item_offsets[i],
-                                    ui.cfg_item_offsets.get(i + 1).copied(),
-                                ));
-                                ui.pitch_canvas.invalidate();
-                            }
+                            let i = ui.list_select.selection();
+                            ui.update_selected_stroke(i);
+                        }
+                        E::OnTextInput if h == ui.cfg_file || h == ui.list_file => {
+                            let list_file = ui.list_file.text();
+                            let cfg_file = ui.cfg_file.text();
+                            // this does IO on the main thread, but it won't be that slow
+                            if let Err(e) = ui.change_data_files(list_file, cfg_file) {
+                                println!("error changing data files: {:#}", e);
+                            };
                         }
                         E::OnWindowClose if h == ui.window => nwg::stop_thread_dispatch(),
                         E::OnButtonClick => {
@@ -291,6 +380,19 @@ impl UiWrapper {
         });
 
         Ok(UiWrapper { ui, handlers: [handler] })
+    }
+}
+
+struct WindowWrapper(HWND);
+unsafe impl Sync for WindowWrapper {}
+unsafe impl Send for WindowWrapper {}
+
+fn watch_callback(notice_receiver: &nwg::Notice) -> impl FnMut(Event) + Send + 'static {
+    let sender = notice_receiver.sender();
+    move |event: Event| {
+        if let Event::Write(_) = event {
+            sender.notice();
+        }
     }
 }
 

@@ -7,7 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nwg = { version = "^1.0.11", package = "native-windows-gui" }
-winapi = { version = "^0.3.9", features = ["wingdi"] }
-anyhow = "^1.0.40"
-nom = "^6.1.2"
+nwg = { version = "1.0.11", package = "native-windows-gui" }
+winapi = { version = "0.3.9", features = ["wingdi", "winuser"] }
+anyhow = "1.0.40"
+nom = "6.1.2"
+notify = "4.0.15"
+hotwatch = "0.4.5"
