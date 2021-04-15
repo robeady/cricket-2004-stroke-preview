@@ -1,10 +1,10 @@
-use crate::{pitch_canvas::PitchPainter, strokes::Stroke};
-use nwg::stretch::geometry::{Rect, Size};
-use nwg::stretch::style::{
-    AlignContent, AlignItems, AlignSelf, Dimension as D, FlexDirection, JustifyContent,
-};
-use std::{any::Any, rc::Rc};
-use std::{cell::RefCell, collections::HashMap};
+use crate::pitch_canvas::PitchPainter;
+use crate::strokes::Stroke;
+use nwg::stretch::geometry::Size;
+use nwg::stretch::style::{AlignItems, Dimension as D, FlexDirection};
+use std::any::Any;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 fn default<T: Default>() -> T {
     Default::default()
