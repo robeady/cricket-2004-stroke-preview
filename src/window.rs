@@ -1,6 +1,6 @@
 use crate::pitch_canvas::PitchPainter;
 use crate::strokes::Stroke;
-use nwg::stretch::geometry::Size;
+use nwg::stretch::geometry::{Rect, Size};
 use nwg::stretch::style::{AlignItems, Dimension as D, FlexDirection};
 use std::any::Any;
 use std::cell::RefCell;
@@ -65,6 +65,13 @@ impl Drop for UiWrapper {
     }
 }
 
+const ZERO_RECT: Rect<D> = Rect {
+    top: D::Points(0.0),
+    bottom: D::Points(0.0),
+    start: D::Points(0.0),
+    end: D::Points(0.0),
+};
+
 impl UiWrapper {
     fn build() -> anyhow::Result<UiWrapper> {
         let mut window = default();
@@ -99,43 +106,32 @@ impl UiWrapper {
             .parent(&right_frame)
             .build(&mut radios_frame)?;
 
+        let radios_flex = default();
+        let mut flex_builder =
+            nwg::FlexboxLayout::builder().parent(&radios_frame).padding(ZERO_RECT);
+
         let mut radios = [default(), default(), default(), default(), default()];
-        nwg::RadioButton::builder()
-            .parent(&radios_frame)
-            .position((0, 0))
-            .size((100, 35))
-            .flags(nwg::RadioButtonFlags::VISIBLE | nwg::RadioButtonFlags::GROUP)
-            .text("Very early")
-            .build(&mut radios[0])?;
-        nwg::RadioButton::builder()
-            .parent(&radios_frame)
-            .position((100, 0))
-            .size((70, 35))
-            .flags(nwg::RadioButtonFlags::VISIBLE)
-            .text("Early")
-            .build(&mut radios[1])?;
-        nwg::RadioButton::builder()
-            .parent(&radios_frame)
-            .position((170, 0))
-            .size((70, 35))
-            .flags(nwg::RadioButtonFlags::VISIBLE)
-            .check_state(nwg::RadioButtonState::Checked)
-            .text("Ideal")
-            .build(&mut radios[2])?;
-        nwg::RadioButton::builder()
-            .parent(&radios_frame)
-            .position((240, 0))
-            .size((70, 35))
-            .flags(nwg::RadioButtonFlags::VISIBLE)
-            .text("Late")
-            .build(&mut radios[3])?;
-        nwg::RadioButton::builder()
-            .parent(&radios_frame)
-            .position((310, 0))
-            .size((90, 35))
-            .flags(nwg::RadioButtonFlags::VISIBLE)
-            .text("Very late")
-            .build(&mut radios[4])?;
+        for (i, &(text, width)) in [
+            ("Very early", 100.0f32),
+            ("Early", 70.0),
+            ("Ideal", 70.0),
+            ("Late", 70.0),
+            ("Very late", 90.0),
+        ]
+        .iter()
+        .enumerate()
+        {
+            use nwg::RadioButtonFlags as Flags;
+            nwg::RadioButton::builder()
+                .parent(&radios_frame)
+                .flags(if i == 0 { Flags::VISIBLE } else { Flags::VISIBLE | Flags::GROUP })
+                .text(text)
+                .build(&mut radios[i])?;
+            flex_builder = flex_builder
+                .child(&radios[i])
+                .child_size(Size { width: D::Points(width), height: D::Points(35.0) })
+        }
+        flex_builder.build(&radios_flex)?;
 
         let mut pitch_canvas = default();
         nwg::ExternCanvas::builder().parent(Some(&right_frame)).build(&mut pitch_canvas)?;
