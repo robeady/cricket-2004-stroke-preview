@@ -3,7 +3,7 @@ use nom::{
     bytes::{complete::tag_no_case, streaming::take_till},
     character::streaming::{alphanumeric1, line_ending, space1},
     combinator::{map_res, opt},
-    error::{convert_error, Error, VerboseError},
+    error::Error,
     multi::many1,
     sequence::{pair, preceded, terminated, tuple},
     IResult, Needed,
@@ -15,7 +15,7 @@ use anyhow::anyhow;
 #[derive(Debug, PartialEq)]
 pub struct Stroke {
     pub timings_normal: [StrokeTiming; 5],
-    pub timings_hit6: [StrokeTiming; 5],
+    pub timings_6hit: [StrokeTiming; 5],
 }
 
 #[derive(Debug, PartialEq)]
@@ -99,7 +99,7 @@ fn parse_stroke<'a>(b: &'a [u8]) -> CResult<'a, Stroke> {
         b,
         Stroke {
             timings_normal: [normal_0, normal_1, normal_2, normal_3, normal_4],
-            timings_hit6: [hit6_0, hit6_1, hit6_2, hit6_3, hit6_4],
+            timings_6hit: [hit6_0, hit6_1, hit6_2, hit6_3, hit6_4],
         },
     ))
 }
@@ -242,7 +242,7 @@ Power 144631 PowerArea 361578
                     power_area: 361578.0,
                 },
             ],
-            timings_hit6: [
+            timings_6hit: [
                 StrokeTiming {
                     vertical: 90596966.0,
                     direction: 242980370.0,

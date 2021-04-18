@@ -31,7 +31,13 @@ impl PitchPainter {
         }
     }
 
-    pub fn paint(&self, paint: &nwg::PaintData, stroke: Option<&Stroke>, selected_timing: usize) {
+    pub fn paint(
+        &self,
+        paint: &nwg::PaintData,
+        stroke: Option<&Stroke>,
+        selected_timing: usize,
+        selected_6hit: bool,
+    ) {
         let ps = paint.begin_paint();
 
         unsafe {
@@ -64,17 +70,14 @@ impl PitchPainter {
             SelectObject(hdc, GetStockObject(NULL_PEN as _));
 
             if let Some(stroke) = stroke {
+                let timings =
+                    if selected_6hit { &stroke.timings_6hit } else { &stroke.timings_normal };
                 for i in 0..5 {
                     if selected_timing != i {
-                        self.paint_stroke_segment(hdc, &stroke.timings_normal[i], bounds, false);
+                        self.paint_stroke_segment(hdc, &timings[i], bounds, false);
                     }
                 }
-                self.paint_stroke_segment(
-                    hdc,
-                    &stroke.timings_normal[selected_timing],
-                    bounds,
-                    true,
-                );
+                self.paint_stroke_segment(hdc, &timings[selected_timing], bounds, true);
             }
         }
 

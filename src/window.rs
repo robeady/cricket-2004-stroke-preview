@@ -40,6 +40,7 @@ pub struct Ui {
 
     list_select: nwg::ListBox<String>,
     pitch_canvas: nwg::ExternCanvas,
+    checkbox_6hit: nwg::CheckBox,
     radios: [nwg::RadioButton; 5],
 
     pitch_painter: Option<PitchPainter>,
@@ -149,7 +150,7 @@ impl App {
             .flags(
                 nwg::WindowFlags::WINDOW | nwg::WindowFlags::VISIBLE | nwg::WindowFlags::RESIZABLE,
             )
-            .size((700, 450))
+            .size((750, 450))
             .position((300, 300))
             .title("Stroke preview")
             .build(&mut window)?;
@@ -176,17 +177,25 @@ impl App {
             .parent(&right_frame)
             .build(&mut radios_frame)?;
 
+        let mut checkbox_6hit = default();
+        nwg::CheckBox::builder().parent(&radios_frame).text("6hit").build(&mut checkbox_6hit)?;
+
         let radios_flex = default();
-        let mut flex_builder =
-            nwg::FlexboxLayout::builder().parent(&radios_frame).padding(rect(0.0));
+        let mut flex_builder = nwg::FlexboxLayout::builder()
+            .parent(&radios_frame)
+            .padding(rect(0.0))
+            .child(&checkbox_6hit)
+            .child_size(Size { width: D::Points(60.0), height: D::Points(35.0) })
+            .child_flex_grow(0.0)
+            .child_flex_shrink(0.0);
 
         let mut radios = [default(), default(), default(), default(), default()];
         for (i, &(text, width)) in [
-            ("Very early", 100.0f32),
-            ("Early", 70.0),
-            ("Ideal", 70.0),
-            ("Late", 70.0),
-            ("Very late", 90.0),
+            ("Very early", 97.0f32),
+            ("Early", 63.0),
+            ("Ideal", 63.0),
+            ("Late", 58.0),
+            ("Very late", 80.0),
         ]
         .iter()
         .enumerate()
@@ -205,6 +214,8 @@ impl App {
             flex_builder = flex_builder
                 .child(&radios[i])
                 .child_size(Size { width: D::Points(width), height: D::Points(35.0) })
+                .child_flex_grow(0.0)
+                .child_flex_shrink(0.0)
         }
         flex_builder.build(&radios_flex)?;
 
@@ -280,7 +291,7 @@ impl App {
             .child_size(Size { width: D::Percent(1.0), height: D::Percent(1.0) })
             .child_margin(rect(5.0))
             .child(&radios_frame)
-            .child_size(Size { width: D::Points(400.0), height: D::Points(40.0) })
+            .child_size(Size { width: D::Points(450.0), height: D::Points(40.0) })
             .child_margin(rect(5.0))
             .build(&right_flex)?;
 
@@ -308,6 +319,7 @@ impl App {
             cfg_file_input,
             list_select,
             pitch_canvas,
+            checkbox_6hit,
             radios,
             pitch_painter: None,
             selected_stroke: None,
@@ -343,7 +355,7 @@ impl App {
                             ui.load_data_files();
                         }
                         E::OnMinMaxInfo if h == ui.window => {
-                            data.on_min_max().set_min_size(650, 550);
+                            data.on_min_max().set_min_size(750, 550);
                         }
                         E::OnInit if h == ui.window => ui.pitch_painter = Some(PitchPainter::new()),
                         E::OnPaint if h == ui.pitch_canvas => {
@@ -352,6 +364,7 @@ impl App {
                                     data.on_paint(),
                                     ui.selected_stroke.as_ref(),
                                     ui.selected_timing,
+                                    ui.checkbox_6hit.check_state() == nwg::CheckBoxState::Checked,
                                 );
                             }
                         }
@@ -372,6 +385,8 @@ impl App {
                             if let Some(i) = ui.radios.iter().position(|r| *r == h) {
                                 ui.selected_timing = i;
                                 ui.pitch_canvas.invalidate();
+                            } else if ui.checkbox_6hit == h {
+                                ui.pitch_canvas.invalidate()
                             }
                         }
                         _ => {}
