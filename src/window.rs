@@ -96,7 +96,10 @@ impl Ui {
                         .map(|(line_number, name)| format!("{}: {}", line_number, name))
                         .collect(),
                 );
-                self.update_selected_stroke(previous_selection.filter(|&i| i < new_cfg_items_len));
+                let previous_selection_if_still_valid =
+                    previous_selection.filter(|&i| i < new_cfg_items_len);
+                self.list_select.set_selection(previous_selection_if_still_valid);
+                self.update_selected_stroke(previous_selection_if_still_valid);
             }
             Err(e) => {
                 println!("failed to load data files: {:#}", e)
