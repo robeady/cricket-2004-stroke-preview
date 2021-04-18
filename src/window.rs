@@ -88,8 +88,14 @@ impl Ui {
                 self.cfg_contents = new_data.cfg_contents;
                 let previous_selection = self.list_select.selection();
                 let new_cfg_items_len = new_data.cfg_items.len();
-                self.list_select
-                    .set_collection(new_data.cfg_items.into_iter().map(|(name, _)| name).collect());
+                self.list_select.set_collection(
+                    new_data
+                        .cfg_items
+                        .into_iter()
+                        .map(|(name, offset)| (line_number_of(&self.cfg_contents, offset), name))
+                        .map(|(line_number, name)| format!("{}: {}", line_number, name))
+                        .collect(),
+                );
                 self.update_selected_stroke(previous_selection.filter(|&i| i < new_cfg_items_len));
             }
             Err(e) => {
@@ -388,10 +394,22 @@ fn watch_callback(notice_receiver: &nwg::Notice) -> impl FnMut(Event) + Send + '
     }
 }
 
-fn parse_stroke(cfg_contents: &[u8], offset: i64, offset_next: Option<i64>) -> Stroke {
+fn line_number_of(cfg_contents: &[u8], offset: i64) -> usize {
+    // offset found experimentally
+    let bytes_of_non_strokes: i64 = 0x7c60;
     // https://www.planetcricket.org/forums/threads/config-editor-v3.8697/post-130389
     // offset of first stroke
-    let delta = -558891009;
+    let delta = -558891009 + bytes_of_non_strokes;
+    let offset = offset + delta;
+    cfg_contents[..(offset as usize)].iter().filter(|&&c| c == b'\n').count() + 1
+}
+
+fn parse_stroke(cfg_contents: &[u8], offset: i64, offset_next: Option<i64>) -> Stroke {
+    // offset found experimentally
+    let bytes_of_non_strokes: i64 = 0x7c60;
+    // https://www.planetcricket.org/forums/threads/config-editor-v3.8697/post-130389
+    // offset of first stroke
+    let delta = -558891009 + bytes_of_non_strokes;
     let offset = offset + delta;
     let slice = if let Some(end) = offset_next {
         let end = end + delta;

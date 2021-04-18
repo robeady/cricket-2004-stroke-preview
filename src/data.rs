@@ -26,13 +26,8 @@ pub fn load_cfg_data(files: &Files) -> anyhow::Result<CfgData> {
 
 fn read_strokes_from_ai_cfg_file(path: &str) -> anyhow::Result<Vec<u8>> {
     let file = File::open(path).context("could not open cfg file")?;
-
-    // offset found experimentally
-    let bytes_of_non_strokes: u64 = 0x7c60;
-    let buffer_size = file.metadata().map(|m| m.len() + 1 - bytes_of_non_strokes).unwrap_or(0);
-
+    let buffer_size = file.metadata().map(|m| m.len() + 1).unwrap_or(0);
     let mut buf = BufReader::new(file);
-    buf.seek(SeekFrom::Start(bytes_of_non_strokes)).unwrap();
     let mut destination = Vec::with_capacity(buffer_size as usize);
     buf.read_to_end(&mut destination)?;
     Ok(destination)
